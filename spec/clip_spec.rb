@@ -1,10 +1,10 @@
-require "#{File.dirname(__FILE__)}/../lib/cli_parser"
+require "#{File.dirname(__FILE__)}/../lib/clip"
 require "rubygems"
-require_gem "rspec"
+require "spec"
 
 describe "When long command-line parameters are parsed" do  
   before do
-    class TestParser < CliParser
+    class TestParser < Clip::Parser
       opt :verbose
       opt :debug
       opt :host 
@@ -40,13 +40,14 @@ describe "When long command-line parameters are parsed" do
   end
   
   it "should raise UnrecognizedOption exception for unknown flags" do
-    lambda { @parser.parse %w(--non-existent) }.should raise_error(UnrecognizedOption)
+    lambda { @parser.parse %w(--non-existent) }.
+      should raise_error(Clip::UnrecognizedOption)
   end  
 end
 
 describe "When short (single-letter) command-line parse are parsed" do
   before do
-    class ShortParser < CliParser
+    class ShortParser < Clip::Parser
       opt :host, :short => "h"
       opt :port, :short => "p"
       opt :verbose, :short => "v"
@@ -72,7 +73,7 @@ end
 
 describe "When usage for the parser is requested" do
   before do
-    class UsageParser < CliParser
+    class UsageParser < Clip::Parser
       opt "host", :short => "h", :desc => "The hostname", :default => "localhost"
       opt "port", :short => "p", :desc => "The port number", :required => true
     end
@@ -92,7 +93,7 @@ end
 
 describe "When parameters are marked as required" do
   before do
-    class RequiredParser < CliParser
+    class RequiredParser < Clip::Parser
       opt "host"
       opt "port", :required => true
     end
@@ -106,13 +107,14 @@ describe "When parameters are marked as required" do
   end
   
   it "should throw MissingArgument when there are missing arguments" do
-    lambda { @parser.parse %w(--host localhost) }.should raise_error(MissingArgument)
+    lambda { @parser.parse %w(--host localhost) }.
+      should raise_error(Clip::MissingArgument)
   end
 end
 
 describe "When parameters are marked with defaults" do
   before do
-    class DefaultParser < CliParser
+    class DefaultParser < Clip::Parser
       opt "host", :default => "localhost"
     end
     @parser = DefaultParser.new
