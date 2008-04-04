@@ -9,27 +9,46 @@ library, completely driven by specs.
 
 Cheers!
 
-== FEATURES/PROBLEMS:
+== FEATURES
 
-* FIX (list of features or problems)
+You like command-line parsing, but you hate all of the bloat. Why
+should you have to create a Hash, then create a parser, then fill
+that Hash out then throw the parser away (unless you want to print
+out a usage message) and deal with a Hash? Why, for Pete's sake, should
+the parser and the parsed values be handled by two different objects?
+
+Well, now they don't...
 
 == SYNOPSIS:
 
-  FIX (code sample of usage)
+And it goes a little something like this...
 
-== REQUIREMENTS:
+  require "rubygems"
+  require "clip"
 
-* FIX (list of requirements)
+  class MyParser < Clip::Parser
+    opt :host, :short => 'h', :desc => 'The host name', :default => 'localhost'
+    opt :port, :short => 'p', :desc => 'The port', :default => 8080
+    flag :verbose, :short => 'v', :desc => 'Make it chatty'
+  end
 
-== INSTALL:
+  parser = MyParser.new
+  parser.parse(ARGV)
 
-* FIX (sudo gem install, anything else)
+  if parser.verbose?
+    puts parser.host
+    puts parser.port
+  end
+
+== PROBLEMS:
+
+None so far...
 
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2008 FIX
+Copyright (c) 2008 Alex Vollmer
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
