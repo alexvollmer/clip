@@ -5,11 +5,11 @@ require "spec"
 describe "When long command-line parameters are parsed" do  
   before do
     class TestParser < Clip::Parser
-      opt :verbose
-      opt :debug
-      opt :host 
-      opt :port
-      opt :exclude_from
+      optional :verbose
+      optional :debug
+      optional :host
+      optional :port
+      optional :exclude_from
     
       def in_debug?
         @debug == true
@@ -51,9 +51,9 @@ end
 describe "When short (single-letter) command-line parse are parsed" do
   before do
     class ShortParser < Clip::Parser
-      opt :host, :short => "h"
-      opt :port, :short => "p"
-      opt :verbose, :short => "v"
+      optional :host, :short => "h"
+      optional :port, :short => "p"
+      optional :verbose, :short => "v"
       
       def verbose?
         @verbose == true
@@ -79,8 +79,8 @@ end
 describe "When usage for the parser is requested" do
   before do
     class UsageParser < Clip::Parser
-      opt :host, :short => "h", :desc => "The hostname", :default => "localhost"
-      req :port, :short => "p", :desc => "The port number"
+      optional :host, :short => "h", :desc => "The hostname", :default => "localhost"
+      required :port, :short => "p", :desc => "The port number"
     end
     @parser = UsageParser.new
   end
@@ -98,8 +98,8 @@ end
 describe "When parameters are marked as required" do
   before do
     class RequiredParser < Clip::Parser
-      opt "host"
-      req "port"
+      optional :host
+      required :port
     end
     @parser = RequiredParser.new
   end
@@ -120,7 +120,7 @@ end
 describe "When parameters are marked with defaults" do
   before do
     class DefaultParser < Clip::Parser
-      opt "host", :default => "localhost"
+      optional "host", :default => "localhost"
     end
     @parser = DefaultParser.new
   end
@@ -178,11 +178,6 @@ end
 
 describe "Multi-valued parameters" do
   it "should handle multiple value for the same parameter"
-end
-
-describe "Long-form of parameter declaration methods" do
-  it "should handle 'required' the same as 'req'"
-  it "should handle 'optional', the same as 'opt'"
 end
 
 describe "Help output" do

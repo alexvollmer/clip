@@ -15,7 +15,7 @@ module Clip
       # * <tt>short</tt>: a single-character version of your parameter
       # * <tt>desc</tt>: a helpful description (used for printing usage)
       # * <tt>default</tt>: a default value to provide if one is not given
-      def opt(name, options={})
+      def optional(name, options={})
         attr_accessor name.to_sym
         if options[:short]
           alias_method options[:short].to_sym, name.to_sym
@@ -25,11 +25,13 @@ module Clip
         self.options << Option.new(name, options)
       end
 
+      alias_method :opt, :optional
+
       ##
       # Declare a required parameter for your parser. If this parameter
       # is not provided in the parsed content, the parser instance
       # will be invalid (i.e. where +valid?+ return <tt>false</tt>).
-      def req(name, options={})
+      def required(name, options={})
         attr_accessor name.to_sym
         if options[:short]
           alias_method options[:short].to_sym, name.to_sym
@@ -38,6 +40,8 @@ module Clip
 
         self.options << Option.new(name, options.merge({ :required => true }))
       end
+
+      alias_method :req, :required
 
       ##
       # Declare a parameter as a simple binary flag. This declaration
@@ -138,6 +142,8 @@ module Clip
       @errors
     end
 
+    ##
+    # Returns a formatted <tt>String</tt> indicating the usage of the parser
     def help
       out = ""
       out << "Usage:\n"
@@ -157,7 +163,6 @@ module Clip
     end    
   end
 
-  private
   class Option
     attr_accessor :long, :short, :description, :default, :required
 

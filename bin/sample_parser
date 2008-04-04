@@ -6,8 +6,8 @@ require File.join(File.dirname(__FILE__), "../lib/clip")
 # This is a very simple example of how to extend and use the
 # Clip::Parser class.
 class SampleParser < Clip::Parser
-  opt :host, :short => 'h', :desc => 'The hostname', :default => 'localhost'
-  opt :port, :short => 'p', :desc => 'The port', :default => 8080
+  optional :host, :short => 'h', :desc => 'The hostname', :default => 'localhost'
+  optional :port, :short => 'p', :desc => 'The port', :default => 8080
   flag :verbose, :short => 'v', :desc => 'Make it verbose, man'
   
   def dump
