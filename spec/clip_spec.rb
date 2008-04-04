@@ -176,3 +176,21 @@ describe "When specifying flags" do
     @parser.should be_valid
   end
 end
+
+describe "Multi-valued parameters" do
+  it "should handle multiple value for the same parameter"
+end
+
+describe "Long-form of parameter declaration methods" do
+  it "should handle 'required' the same as 'req'"
+  it "should handle 'optional', the same as 'opt'"
+end
+
+describe "Help output" do
+  it "should print out some sensible usage info for to_s"
+  it "should include error messages in to_s"
+end
+
+describe "Pathological conditions" do
+  it "should flag errors correctly for flags that are given parameters"
+end

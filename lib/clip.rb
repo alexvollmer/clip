@@ -116,7 +116,6 @@ module Clip
         unless self.send(required.long.to_sym)
           @valid = false
           @errors[required.long.to_sym] = "Missing required parameter"
-          # raise MissingArgument.new("Missing required arg, '#{required.long}'")
         end
       end
     rescue UnrecognizedOption
