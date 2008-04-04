@@ -23,27 +23,27 @@ describe "When long command-line parameters are parsed" do
   end
   
   it "should set fields for flags with no values to 'true'" do
-    @parser.parse %w(--verbose --debug)
+    @parser.parse '--verbose --debug'
     @parser.should be_in_debug
     @parser.should be_verbose
     @parser.should be_valid
   end
   
   it "should set fields for flags with the given values" do
-    @parser.parse %w(--host localhost --port 8080)
+    @parser.parse '--host localhost --port 8080'
     @parser.host.should eql("localhost")
     @parser.port.should eql("8080")
     @parser.should be_valid
   end
 
   it "should map flags with '-' to methods with '_'" do
-    @parser.parse %w(--exclude-from /Users)
+    @parser.parse '--exclude-from /Users'
     @parser.exclude_from.should eql("/Users")
     @parser.should be_valid
   end
 
   it "should be invalid for unknown flags" do
-    @parser.parse %w(--non-existent)
+    @parser.parse '--non-existent'
     @parser.should_not be_valid
   end
 end
@@ -106,14 +106,14 @@ describe "When parameters are marked as required" do
   end
   
   it "should parse successfully when all required arguments are given" do
-    @parser.parse %w(--host localhost --port 8080)
+    @parser.parse '--host localhost --port 8080'
     @parser.host.should eql("localhost")
     @parser.port.should eql("8080")
     @parser.should be_valid
   end
 
   it "should be invalid when there are missing arguments" do
-    @parser.parse %w(--host localhost)
+    @parser.parse '--host localhost'
     @parser.should_not be_valid
   end
 end
@@ -127,13 +127,13 @@ describe "When parameters are marked with defaults" do
   end
   
   it "should use parsed parameter values" do
-    @parser.parse %w(--host foobar)
+    @parser.parse '--host foobar'
     @parser.should be_valid
     @parser.host.should eql("foobar")
   end
   
   it "should provide default parameter values when none are parsed" do
-    @parser.parse []
+    @parser.parse ''
     @parser.should be_valid
     @parser.host.should eql("localhost")
   end
@@ -156,21 +156,21 @@ describe "When specifying flags" do
   end
 
   it "should indicate given flags" do
-    @parser.parse %w(--debug --verbose)
+    @parser.parse '--debug --verbose'
     @parser.should be_valid
     @parser.should be_debug
     @parser.should be_verbose
   end
 
   it "should indicate missing flags" do
-    @parser.parse []
+    @parser.parse ''
     @parser.should_not be_debug
     @parser.should_not be_verbose
     @parser.should be_valid
   end
 
   it "should support short-name versions" do
-    @parser.parse %w(-v)
+    @parser.parse '-v'
     puts @parser.errors
     @parser.errors.should be_empty
     @parser.should be_valid
