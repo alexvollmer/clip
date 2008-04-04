@@ -86,8 +86,7 @@ describe "When usage for the parser is requested" do
   end
 
   it "should print usage for each option in the order defined, displaying defaults (if given) and required parameters" do
-    out = ""
-    @parser.help(out)    
+    out = @parser.help
     out.should eql(<<USAGE)
 Usage:
 --host -h The hostname (defaults to 'localhost')

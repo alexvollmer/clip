@@ -81,6 +81,10 @@ module Clip
     def parse(args)
       @valid = true
       args = args.split(/\s+/) unless args.kind_of?(Array)
+      if args.member?("--help")
+        puts help
+        exit 0
+      end
       param, value = nil, nil
     
       args.each do |token|
@@ -118,8 +122,6 @@ module Clip
           @errors[required.long.to_sym] = "Missing required parameter"
         end
       end
-    rescue UnrecognizedOption
-      @valid = false
     end
 
     ##
@@ -135,18 +137,14 @@ module Clip
     def errors
       @errors
     end
-  
-    def help(*args)
-      if args
-        out = args.shift
-      else
-        out = STDOUT
-      end
-    
+
+    def help
+      out = ""
       out << "Usage:\n"
       self.class.options.each do |option|
         out << "#{option.usage}\n"
       end
+      out
     end
 
     private
@@ -180,13 +178,13 @@ module Clip
     end
   
     def usage
-      out = StringIO.new
+      out = ""
       out << "--#{@long}"
       out << " -#{@short}"
       out << " #{@description}" if @description
       out << " (defaults to '#{@default}')" if @default
       out << " REQUIRED" if @required
-      out.string
+      out
     end
   end
 
