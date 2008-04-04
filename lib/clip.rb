@@ -24,8 +24,9 @@ module Clip
     
       self.options << Option.new(name, options[:short], options[:desc], options[:default], options[:required])
     end
-  
+    
     def parse(args)
+      @valid = true
       args = args.split(/\s+/) unless args.kind_of?(Array)
       flag, value = nil, nil
     
@@ -53,6 +54,12 @@ module Clip
           raise MissingArgument.new("Missing required arg, '#{required.long}'")
         end
       end
+    rescue UnrecognizedOption, MissingArgument
+      @valid = false
+    end
+
+    def valid?
+      @valid
     end
   
     def help(*args)

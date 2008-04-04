@@ -32,17 +32,19 @@ describe "When long command-line parameters are parsed" do
     @parser.parse %w(--host localhost --port 8080)
     @parser.host.should eql("localhost")
     @parser.port.should eql("8080")
+    @parser.should be_valid
   end
 
   it "should map flags with '-' to methods with '_'" do
     @parser.parse %w(--exclude-from /Users)
     @parser.exclude_from.should eql("/Users")
+    @parser.should be_valid
   end
-  
-  it "should raise UnrecognizedOption exception for unknown flags" do
-    lambda { @parser.parse %w(--non-existent) }.
-      should raise_error(Clip::UnrecognizedOption)
-  end  
+
+  it "should be invalid for unknown flags" do
+    @parser.parse %w(--non-existent)
+    @parser.should_not be_valid
+  end
 end
 
 describe "When short (single-letter) command-line parse are parsed" do
@@ -104,11 +106,12 @@ describe "When parameters are marked as required" do
     @parser.parse %w(--host localhost --port 8080)
     @parser.host.should eql("localhost")
     @parser.port.should eql("8080")
+    @parser.should be_valid
   end
-  
-  it "should throw MissingArgument when there are missing arguments" do
-    lambda { @parser.parse %w(--host localhost) }.
-      should raise_error(Clip::MissingArgument)
+
+  it "should be invalid when there are missing arguments" do
+    @parser.parse %w(--host localhost)
+    @parser.should_not be_valid
   end
 end
 
