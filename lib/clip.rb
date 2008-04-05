@@ -1,5 +1,18 @@
 #!/usr/bin/env ruby
 
+# TODO:
+# Time for a major architectural change. The self.class.options variable
+# now becomes a Hash. As we declare flags, optionals and requireds we
+# add them to this hash (keyed by both long and short symbols). Each
+# Option has a block associated with it to be invoked as its parameter
+# is invoked.
+#
+# The main parsing loop is changed to one that simply converts a flat
+# command line to a hash of parameters => values. We then loop through
+# the hash and apply each key/value pair to the Option blocks.
+#
+# Still not quite sure how we deal with required options that are missing.
+# Maybe we dynamically build the +valid?+ method out.
 module Clip
   VERSION = "0.0.1"
 
