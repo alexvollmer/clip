@@ -200,7 +200,10 @@ module Clip
     end
   
     def usage
-      out = sprintf('--%-10s -%-2s %s', @long, @short, @description)
+      out = sprintf('--%-10s -%-2s %s',
+                    @long.to_s.gsub('_', '-').to_sym,
+                    @short,
+                    @description)
       out << " (defaults to '#{@default}')" if @default
       out << " REQUIRED" if @required
       out
