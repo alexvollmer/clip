@@ -36,6 +36,7 @@ module Clip
         name = name.to_sym
         attr_accessor name
         self.options[name] = Option.new(name, options)
+        self.order << self.options[name]
         if options[:short]
           self.options[options[:short].to_sym] = self.options[name]
         end
@@ -74,6 +75,7 @@ module Clip
         EOF
 
         self.options[name] = Flag.new(name, options)
+        self.order << self.options[name]
         if options[:short]
           self.options[options[:short].to_sym] = self.options[name]
         end
@@ -150,7 +152,7 @@ module Clip
     def help
       out = ""
       out << "Usage:\n"
-      self.class.options.values.uniq.each do |option|
+      self.class.order.each do |option|
         out << "#{option.usage}\n"
       end
       out
@@ -159,8 +161,12 @@ module Clip
     private
     def self.inherited(sub)
       sub.class_eval <<-EOF
-        def self.options
-          @@options ||= {}
+        def self.options          
+          (@@options ||= {})
+        end
+
+        def self.order
+          (@@order ||= [])
         end
       EOF
     end    

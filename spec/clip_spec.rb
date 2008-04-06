@@ -2,6 +2,49 @@ require "#{File.dirname(__FILE__)}/../lib/clip"
 require "rubygems"
 require "spec"
 
+class HaveErrors
+
+  def matches?(target)
+    @target = target
+    not @target.errors.empty?
+  end
+
+  def failure_message
+    "expected #{@target} to have errors"
+  end
+
+  def negative_failure_message
+    "expected #{@target} to have no errors, but... #{@target.errors.inspect}"
+  end
+end
+
+def have_errors
+  HaveErrors.new
+end
+
+class HaveErrorsOn
+  def initialize(expected)
+    @expected = expected
+  end
+
+  def matches?(target)
+    @target = target
+    not @target.errors[@expected.to_sym].nil?
+  end
+
+  def failure_message
+    "expected error message for #{@expected} on #{@target}"
+  end
+
+  def negative_failure_message
+    "unexpected error message for #{@expected} on #{@target}"
+  end
+end
+
+def have_errors_on(expected)
+  HaveErrorsOn.new(expected)
+end
+
 describe "When long command-line parameters are parsed" do  
   before do
     class TestParser < Clip::Parser
@@ -84,24 +127,22 @@ describe "When short (single-letter) command-line parse are parsed" do
   end
 end
 
-# describe "When usage for the parser is requested" do
-#   before do
-#     class UsageParser < Clip::Parser
-#       optional :host, :short => "h", :desc => "The hostname", :default => "localhost"
-#       required :port, :short => "p", :desc => "The port number"
-#     end
-#     @parser = UsageParser.new
-#   end
-# 
-#   it "should print usage for each option in the order defined, displaying defaults (if given) and required parameters" do
-#     out = @parser.help
-#     out.should eql(<<USAGE)
-# Usage:
-# --host -h The hostname (defaults to 'localhost')
-# --port -p The port number REQUIRED
-# USAGE
-#   end
-# end
+describe "When usage for the parser is requested" do
+  before do
+    class UsageParser < Clip::Parser
+      optional :host, :short => "h", :desc => "The hostname", :default => "localhost"
+      required :port, :short => "p", :desc => "The port number"
+    end
+    @parser = UsageParser.new
+  end
+
+  it "should print usage correctly" do
+    out = @parser.help.split("\n")
+    out[0].should match(/Usage/)
+    out[1].should match(/--host\s+-h\s+The hostname/)
+    out[2].should match(/--port\s+-p\s+The port number.*REQUIRED/)
+  end
+end
 
 describe "When parameters are marked as required" do
   before do
@@ -202,47 +243,4 @@ end
 
 describe "Pathological conditions" do
   it "should flag errors correctly for flags that are given parameters"
-end
-
-class HaveErrors
-
-  def matches?(target)
-    @target = target
-    not @target.errors.empty?
-  end
-
-  def failure_message
-    "expected #{@target} to have errors"
-  end
-
-  def negative_failure_message
-    "expected #{@target} to have no errors, but... #{@target.errors.inspect}"
-  end
-end
-
-def have_errors
-  HaveErrors.new
-end
-
-class HaveErrorsOn
-  def initialize(expected)
-    @expected = expected
-  end
-
-  def matches?(target)
-    @target = target
-    not @target.errors[@expected.to_sym].nil?
-  end
-
-  def failure_message
-    "expected error message for #{@expected} on #{@target}"
-  end
-
-  def negative_failure_message
-    "unexpected error message for #{@expected} on #{@target}"
-  end
-end
-
-def have_errors_on(expected)
-  HaveErrorsOn.new(expected)
 end
