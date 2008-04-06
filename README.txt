@@ -45,6 +45,10 @@ And it goes a little something like this...
     end
   end
 
+Simply invoking the <tt>to_s</tt> method on a parser instance will dump both the
+correct usage and any errors encountered during parsing. No need for you to manage
+the state of what's required and what isn't by yourself.
+
 == PROBLEMS:
 
 None so far...

@@ -163,8 +163,17 @@ describe Clip::Parser do
   end
 
   describe "Help output" do
-    it "should print out some sensible usage info for to_s"
-    it "should include error messages in to_s"
+    it "should print out some sensible usage info for to_s" do
+      @parser.to_s.should == @parser.help
+    end
+
+    it "should include error messages in to_s" do
+      @parser.parse ''
+      out = @parser.to_s.split("\n")
+      out[0].should match(/Error/)
+      out[1].should match(/missing required.*files/i)
+      out[2..-1].join("\n").strip.should == @parser.help.strip
+    end
   end
 
   describe "Pathological conditions" do

@@ -77,6 +77,7 @@ module Clip
     
     def initialize
       @errors = {}
+      @valid = true
     end
 
     ##
@@ -149,6 +150,17 @@ module Clip
         out << "#{option.usage}\n"
       end
       out
+    end
+
+    def to_s
+      out = ""
+      unless valid?
+        out << "Errors:\n"
+        errors.each do |field, msg|
+          out << "#{field}: #{msg}\n"
+        end
+      end
+      out << help
     end
 
     private
