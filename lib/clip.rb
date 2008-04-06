@@ -196,10 +196,7 @@ module Clip
     end
   
     def usage
-      out = ""
-      out << "--#{@long}"
-      out << " -#{@short}"
-      out << " #{@description}" if @description
+      out = sprintf('--%-10s -%-2s %s', @long, @short, @description)
       out << " (defaults to '#{@default}')" if @default
       out << " REQUIRED" if @required
       out
@@ -229,11 +226,7 @@ module Clip
     end
   
     def usage
-      out = ""
-      out << "--#{@long}"
-      out << " -#{@short}"
-      out << " #{@description}" if @description
-      out
+      sprintf('--%-10s -%-2s %s', @long, @short, @description)
     end
   end
 end

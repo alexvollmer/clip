@@ -139,7 +139,7 @@ describe "When usage for the parser is requested" do
   it "should print usage correctly" do
     out = @parser.help.split("\n")
     out[0].should match(/Usage/)
-    out[1].should match(/--host\s+-h\s+The hostname/)
+    out[1].should match(/--host\s+-h\s+The hostname.*default.*localhost/)
     out[2].should match(/--port\s+-p\s+The port number.*REQUIRED/)
   end
 end
