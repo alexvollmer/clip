@@ -16,26 +16,29 @@
 module Clip
   VERSION = "0.0.1"
 
-  # The base class for command-line parser. Specific parsers should extend this class
-  # and provide simple attribute methods matching the options to be parsed
+  # The base class for command-line parser. Specific parsers should extend
+  # this class and declare how the command-line should be parsed with
+  # the +optional+, +required+ and +flag+ class methods.
   class Parser
     class << self
       ##
       # Declare an optional parameter for your parser. This creates an accessor
-      # method matching the <tt>name</tt> parameter.
+      # method matching the <tt>name</tt> parameter. Options that use the '-'
+      # character as a word separator are converted to method names using
+      # '_'. For example the name 'exclude-files' would create a method named
+      # <tt>exclude_files</tt>.
       # === options
       # Valid options include:
       # * <tt>short</tt>: a single-character version of your parameter
       # * <tt>desc</tt>: a helpful description (used for printing usage)
       # * <tt>default</tt>: a default value to provide if one is not given
       def optional(name, options={})
-        attr_accessor name.to_sym
+        name = name.to_sym
+        attr_accessor name
+        self.options[name] = Option.new(name, options)
         if options[:short]
-          alias_method options[:short].to_sym, name.to_sym
-          alias_method "#{options[:short]}=".to_sym, "#{name}=".to_sym
+          self.options[options[:short].to_sym] = self.options[name]
         end
-    
-        self.options << Option.new(name, options)
       end
 
       alias_method :opt, :optional
@@ -45,13 +48,7 @@ module Clip
       # is not provided in the parsed content, the parser instance
       # will be invalid (i.e. where +valid?+ return <tt>false</tt>).
       def required(name, options={})
-        attr_accessor name.to_sym
-        if options[:short]
-          alias_method options[:short].to_sym, name.to_sym
-          alias_method "#{options[:short]}=".to_sym, "#{name}=".to_sym
-        end
-
-        self.options << Option.new(name, options.merge({ :required => true }))
+        optional(name, options.merge({ :required => true }))
       end
 
       alias_method :req, :required
@@ -72,18 +69,14 @@ module Clip
           end
 
           def #{name}?
-            return @#{name}
+            return @#{name} || false
           end
         EOF
 
+        self.options[name] = Flag.new(name, options)
         if options[:short]
-          class_eval <<-EOF
-            alias_method :#{options[:short]}?, :#{name}?
-            alias_method :flag_#{options[:short]}, :flag_#{name}
-          EOF
+          self.options[options[:short].to_sym] = self.options[name]
         end
-
-        self.options << Option.new(name, options.merge({ :required => false, :default => nil }))
       end
     end
     
@@ -107,36 +100,33 @@ module Clip
       args.each do |token|
         case token
         when /^-(-)?\w/
-          param = token.sub(/^-(-)?/, '').sub('-', '_')
+          param = token.sub(/^-(-)?/, '').sub('-', '_').to_sym
           value = nil
         else
           value = token
         end
-      
-        unless self.respond_to?(param.to_sym) or self.respond_to?("#{param}?".to_sym)
-          @errors[param.to_sym] = "Unrecoginzed parameter"
+
+        option = self.class.options[param]
+        if option
+          if (value.nil? && option.kind_of?(Flag)) || value
+            option.process(self, value)
+          end
+        else
+          @errors[param] = "Unrecoginzed parameter"
           @valid = false
           next
         end
+      end
 
-        if self.respond_to?("#{param}=")
-          self.send("#{param}=".to_sym, value.nil? ? true : value)
-        else
-          # FIXME: what happens when somebody sends us a value?
-          self.send("flag_#{param}")
-        end
-      end
-    
-      self.class.options.each do |option|
-        if option.has_default? and self.send(option.long.to_sym).nil?
-          self.send("#{option.long}=".to_sym, option.default)
-        end
-      end
-    
-      self.class.options.find_all { |e| e.required? }.each do |required|
-        unless self.send(required.long.to_sym)
-          @valid = false
-          @errors[required.long.to_sym] = "Missing required parameter"
+      # Find required options that are missing arguments
+      self.class.options.each do |param, opt|
+        if opt.kind_of?(Option) and self.send(opt.long).nil?
+          if opt.required?
+            @valid = false
+            @errors[opt.long.to_sym] = "Missing required parameter: #{opt.long}"
+          elsif opt.has_default?
+            opt.process(self, opt.default)
+          end
         end
       end
     end
@@ -160,7 +150,7 @@ module Clip
     def help
       out = ""
       out << "Usage:\n"
-      self.class.options.each do |option|
+      self.class.options.values.uniq.each do |option|
         out << "#{option.usage}\n"
       end
       out
@@ -170,7 +160,7 @@ module Clip
     def self.inherited(sub)
       sub.class_eval <<-EOF
         def self.options
-          @@options ||= []
+          @@options ||= {}
         end
       EOF
     end    
@@ -185,6 +175,10 @@ module Clip
       @description = options[:desc]
       @default = options[:default]
       @required = options[:required]
+    end
+
+    def process(parser, value)
+      parser.send("#{@long}=".to_sym, value)
     end
 
     def required?
@@ -206,4 +200,34 @@ module Clip
     end
   end
 
+  class Flag
+    
+    attr_accessor :long, :short, :description
+
+    def initialize(name, options)
+      @long = name
+      @short = options[:short]
+      @description = options[:desc]
+    end
+
+    def process(parser, value)
+      parser.send("flag_#{@long}".to_sym)
+    end
+
+    def required?
+      false
+    end
+
+    def has_default?
+      false
+    end
+  
+    def usage
+      out = ""
+      out << "--#{@long}"
+      out << " -#{@short}"
+      out << " #{@description}" if @description
+      out
+    end
+  end
 end
