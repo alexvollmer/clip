@@ -27,8 +27,9 @@ And it goes a little something like this...
   require "clip"
 
   class MyParser < Clip::Parser
-    opt :host, :short => 'h', :desc => 'The host name', :default => 'localhost'
-    opt :port, :short => 'p', :desc => 'The port', :default => 8080
+    optional :host, :short => 'h', :desc => 'The host name', :default => 'localhost'
+    optional :port, :short => 'p', :desc => 'The port', :default => 8080
+    required :files, :short => 'f', :multi => true, :desc => 'Files to send'
     flag :verbose, :short => 'v', :desc => 'Make it chatty'
   end
 
@@ -38,6 +39,10 @@ And it goes a little something like this...
   if parser.verbose?
     puts parser.host
     puts parser.port
+    puts 'files:'
+    parser.files.each do |f|
+      puts "\t#{f}"
+    end
   end
 
 == PROBLEMS:

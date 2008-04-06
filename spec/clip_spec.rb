@@ -233,7 +233,19 @@ describe "When specifying flags" do
 end
 
 describe "Multi-valued parameters" do
-  it "should handle multiple value for the same parameter"
+  before(:each) do
+    class TestParser < Clip::Parser
+      optional :files, :multi => true
+    end
+    @parser = TestParser.new
+  end
+
+  it "should handle multiple value for the same parameter" do
+    @parser.parse("--files foo --files bar --files baz")
+    @parser.should be_valid
+    @parser.should_not have_errors
+    @parser.files.should == %w[foo bar baz]
+  end
 end
 
 describe "Help output" do

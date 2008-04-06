@@ -1,18 +1,5 @@
 #!/usr/bin/env ruby
 
-# TODO:
-# Time for a major architectural change. The self.class.options variable
-# now becomes a Hash. As we declare flags, optionals and requireds we
-# add them to this hash (keyed by both long and short symbols). Each
-# Option has a block associated with it to be invoked as its parameter
-# is invoked.
-#
-# The main parsing loop is changed to one that simply converts a flat
-# command line to a hash of parameters => values. We then loop through
-# the hash and apply each key/value pair to the Option blocks.
-#
-# Still not quite sure how we deal with required options that are missing.
-# Maybe we dynamically build the +valid?+ method out.
 module Clip
   VERSION = "0.0.1"
 
@@ -27,11 +14,15 @@ module Clip
       # character as a word separator are converted to method names using
       # '_'. For example the name 'exclude-files' would create a method named
       # <tt>exclude_files</tt>.
+      #
+      # When the <tt>:multi</tt> option is enabled, the associated accessor
+      # method will return an <tt>Array</tt> instead of a single scalar value.
       # === options
       # Valid options include:
       # * <tt>short</tt>: a single-character version of your parameter
       # * <tt>desc</tt>: a helpful description (used for printing usage)
       # * <tt>default</tt>: a default value to provide if one is not given
+      # * <tt>multi</tt>: indicates that mulitple values are okay for this param.
       def optional(name, options={})
         name = name.to_sym
         attr_accessor name
@@ -47,7 +38,9 @@ module Clip
       ##
       # Declare a required parameter for your parser. If this parameter
       # is not provided in the parsed content, the parser instance
-      # will be invalid (i.e. where +valid?+ return <tt>false</tt>).
+      # will be invalid (i.e. where valid? returns <tt>false</tt>).
+      #
+      # This method takes the same options as the optional method.
       def required(name, options={})
         optional(name, options.merge({ :required => true }))
       end
@@ -173,7 +166,7 @@ module Clip
   end
 
   class Option
-    attr_accessor :long, :short, :description, :default, :required
+    attr_accessor :long, :short, :description, :default, :required, :multi
 
     def initialize(name, options)
       @long = name
@@ -181,10 +174,17 @@ module Clip
       @description = options[:desc]
       @default = options[:default]
       @required = options[:required]
+      @multi = options[:multi]
     end
 
     def process(parser, value)
-      parser.send("#{@long}=".to_sym, value)
+      if @multi
+        current = parser.send(@long) || []
+        current << value
+        parser.send("#{@long}=".to_sym, current)
+      else
+        parser.send("#{@long}=".to_sym, value)
+      end
     end
 
     def required?
@@ -193,6 +193,10 @@ module Clip
 
     def has_default?
       not @default.nil?
+    end
+
+    def multi?
+      @multi == true
     end
   
     def usage
