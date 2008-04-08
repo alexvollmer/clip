@@ -46,9 +46,12 @@ Simply invoking the <tt>to_s</tt> method on a parser instance will dump both the
 correct usage and any errors encountered during parsing. No need for you to manage
 the state of what's required and what isn't by yourself.
 
-== PROBLEMS:
+== PROBLEMS/DEFICIENCIES:
 
-None so far...
+OK, some of your favorite <tt>OptionParser</tt> features are simply not here.
+You know that cool thing you can do where you tell <tt>OptionParser</tt> the
+class of the kind of object you would like to get for a particular argument?
+Do you like that one? Well, too bad. We don't have that one. Deal with it.
 
 == LICENSE:
 

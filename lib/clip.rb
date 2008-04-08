@@ -30,6 +30,11 @@ module Clip
     # * <tt>desc</tt>: a helpful description (used for printing usage)
     # * <tt>default</tt>: a default value to provide if one is not given
     # * <tt>multi</tt>: indicates that mulitple values are okay for this param.
+    #
+    # Note that specifying the <tt>:multi</tt> option means that the parameter
+    # can be specified several times with different values, or that a single
+    # comma-separated value can be specified which will then be broken up into
+    # separate tokens.
     def optional(name, options={})
       name = name.to_sym
       eval <<-EOF
@@ -182,14 +187,12 @@ module Clip
       out << help
     end
 
-    private
-
-    def options
-      (@@options ||= {})
+    def options # :nodoc:
+      (@options ||= {})
     end
 
-    def order
-      (@@order ||= [])
+    def order # :nodoc:
+      (@order ||= [])
     end
 
   end
@@ -209,7 +212,7 @@ module Clip
     def process(parser, value)
       if @multi
         current = parser.send(@long) || []
-        current << value
+        current.concat(value.split(','))
         parser.send("#{@long}=".to_sym, current)
       else
         parser.send("#{@long}=".to_sym, value)

@@ -148,6 +148,13 @@ describe Clip do
       parser.should_not have_errors
       parser.files.should == %w[foo bar baz]
     end
+
+    it "should handle comma-separated values as multiples" do
+      parser = parse("--files foo,bar,baz")
+      parser.should be_valid
+      parser.should_not have_errors
+      parser.files.should == %w[foo bar baz]
+    end
   end
 
   describe "Help output" do
