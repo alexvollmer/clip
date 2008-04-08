@@ -3,79 +3,94 @@
 module Clip
   VERSION = "0.0.1"
 
-  # The base class for command-line parser. Specific parsers should extend
-  # this class and declare how the command-line should be parsed with
-  # the +optional+, +required+ and +flag+ class methods.
+  ##
+  # Parse arguments (defaults to <tt>ARGV</tt>) with the Parser
+  # configured in the given block.
+  def self.parse(args=ARGV)
+    parser = Parser.new
+    raise "Dontcha wanna configure your parser?" unless block_given?
+    yield parser
+    parser.parse(args)
+    parser
+  end
+
   class Parser
-    class << self
-      ##
-      # Declare an optional parameter for your parser. This creates an accessor
-      # method matching the <tt>name</tt> parameter. Options that use the '-'
-      # character as a word separator are converted to method names using
-      # '_'. For example the name 'exclude-files' would create a method named
-      # <tt>exclude_files</tt>.
-      #
-      # When the <tt>:multi</tt> option is enabled, the associated accessor
-      # method will return an <tt>Array</tt> instead of a single scalar value.
-      # === options
-      # Valid options include:
-      # * <tt>short</tt>: a single-character version of your parameter
-      # * <tt>desc</tt>: a helpful description (used for printing usage)
-      # * <tt>default</tt>: a default value to provide if one is not given
-      # * <tt>multi</tt>: indicates that mulitple values are okay for this param.
-      def optional(name, options={})
-        name = name.to_sym
-        attr_accessor name
-        self.options[name] = Option.new(name, options)
-        self.order << self.options[name]
-        if options[:short]
-          self.options[options[:short].to_sym] = self.options[name]
+    ##
+    # Declare an optional parameter for your parser. This creates an accessor
+    # method matching the <tt>name</tt> parameter. Options that use the '-'
+    # character as a word separator are converted to method names using
+    # '_'. For example the name 'exclude-files' would create a method named
+    # <tt>exclude_files</tt>.
+    #
+    # When the <tt>:multi</tt> option is enabled, the associated accessor
+    # method will return an <tt>Array</tt> instead of a single scalar value.
+    # === options
+    # Valid options include:
+    # * <tt>short</tt>: a single-character version of your parameter
+    # * <tt>desc</tt>: a helpful description (used for printing usage)
+    # * <tt>default</tt>: a default value to provide if one is not given
+    # * <tt>multi</tt>: indicates that mulitple values are okay for this param.
+    def optional(name, options={})
+      name = name.to_sym
+      eval <<-EOF
+        def #{name}=(val)
+          @#{name} = val
         end
-      end
 
-      alias_method :opt, :optional
-
-      ##
-      # Declare a required parameter for your parser. If this parameter
-      # is not provided in the parsed content, the parser instance
-      # will be invalid (i.e. where valid? returns <tt>false</tt>).
-      #
-      # This method takes the same options as the optional method.
-      def required(name, options={})
-        optional(name, options.merge({ :required => true }))
-      end
-
-      alias_method :req, :required
-
-      ##
-      # Declare a parameter as a simple binary flag. This declaration
-      # will create a "question" method matching the given <tt>name</tt>.
-      # For example, declaring with the name of 'verbose' will create a 
-      # method your parser called <tt>verbose?</tt>.
-      # === options
-      # Valid options are:
-      # * <tt>short</tt>: A single-character flag accepted for parsing
-      # * <tt>desc</tt>: Descriptive text for the flag
-      def flag(name, options={})
-        class_eval <<-EOF
-          def flag_#{name}
-            @#{name} = true
-          end
-
-          def #{name}?
-            return @#{name} || false
-          end
-        EOF
-
-        self.options[name] = Flag.new(name, options)
-        self.order << self.options[name]
-        if options[:short]
-          self.options[options[:short].to_sym] = self.options[name]
+        def #{name}
+          @#{name}
         end
+      EOF
+
+      self.options[name] = Option.new(name, options)
+      self.order << self.options[name]
+      if options[:short]
+        self.options[options[:short].to_sym] = self.options[name]
       end
     end
-    
-    def initialize
+
+    alias_method :opt, :optional
+
+    ##
+    # Declare a required parameter for your parser. If this parameter
+    # is not provided in the parsed content, the parser instance
+    # will be invalid (i.e. where valid? returns <tt>false</tt>).
+    #
+    # This method takes the same options as the optional method.
+    def required(name, options={})
+      optional(name, options.merge({ :required => true }))
+    end
+
+    alias_method :req, :required
+
+    ##
+    # Declare a parameter as a simple binary flag. This declaration
+    # will create a "question" method matching the given <tt>name</tt>.
+    # For example, declaring with the name of 'verbose' will create a
+    # method your parser called <tt>verbose?</tt>.
+    # === options
+    # Valid options are:
+    # * <tt>short</tt>: A single-character flag accepted for parsing
+    # * <tt>desc</tt>: Descriptive text for the flag
+    def flag(name, options={})
+      eval <<-EOF
+        def flag_#{name}
+          @#{name} = true
+        end
+
+        def #{name}?
+          return @#{name} || false
+        end
+      EOF
+
+      self.options[name] = Flag.new(name, options)
+      self.order << self.options[name]
+      if options[:short]
+        self.options[options[:short].to_sym] = self.options[name]
+      end
+    end
+
+    def initialize # :nodoc:
       @errors = {}
       @valid = true
     end
@@ -102,7 +117,7 @@ module Clip
           value = token
         end
 
-        option = self.class.options[param]
+        option = options[param]
         if option
           if (value.nil? && option.kind_of?(Flag)) || value
             option.process(self, value)
@@ -115,7 +130,7 @@ module Clip
       end
 
       # Find required options that are missing arguments
-      self.class.options.each do |param, opt|
+      options.each do |param, opt|
         if opt.kind_of?(Option) and self.send(opt.long).nil?
           if opt.required?
             @valid = false
@@ -146,12 +161,16 @@ module Clip
     def help
       out = ""
       out << "Usage:\n"
-      self.class.order.each do |option|
+      order.each do |option|
         out << "#{option.usage}\n"
       end
       out
     end
 
+    ##
+    # Returns a formatted <tt>String</tt> of the +help+ method prefixed by
+    # any parsing errors. Either way you have _one_ method to call to
+    # let your users know what to do.
     def to_s
       out = ""
       unless valid?
@@ -164,20 +183,18 @@ module Clip
     end
 
     private
-    def self.inherited(sub)
-      sub.class_eval <<-EOF
-        def self.options          
-          (@@options ||= {})
-        end
 
-        def self.order
-          (@@order ||= [])
-        end
-      EOF
-    end    
+    def options
+      (@@options ||= {})
+    end
+
+    def order
+      (@@order ||= [])
+    end
+
   end
 
-  class Option
+  class Option # :nodoc:
     attr_accessor :long, :short, :description, :default, :required, :multi
 
     def initialize(name, options)
@@ -222,10 +239,12 @@ module Clip
     end
   end
 
-  class Flag
+  class Flag # :nodoc:
     
     attr_accessor :long, :short, :description
 
+    ##
+    # nodoc
     def initialize(name, options)
       @long = name
       @short = options[:short]

@@ -26,15 +26,12 @@ And it goes a little something like this...
   require "rubygems"
   require "clip"
 
-  class MyParser < Clip::Parser
-    optional :host, :short => 'h', :desc => 'The host name', :default => 'localhost'
-    optional :port, :short => 'p', :desc => 'The port', :default => 8080
-    required :files, :short => 'f', :multi => true, :desc => 'Files to send'
-    flag :verbose, :short => 'v', :desc => 'Make it chatty'
+  parser = Clip.parse do |p|
+    p.optional :host, :short => 'h', :desc => 'The host name', :default => 'localhost'
+    p.optional :port, :short => 'p', :desc => 'The port', :default => 8080
+    p.required :files, :short => 'f', :multi => true, :desc => 'Files to send'
+    p.flag :verbose, :short => 'v', :desc => 'Make it chatty'
   end
-
-  parser = MyParser.new
-  parser.parse(ARGV)
 
   if parser.verbose?
     puts parser.host
