@@ -42,9 +42,18 @@ And it goes a little something like this...
     end
   end
 
+The names of the options and flags that you declare in the block are accessible
+as methods on the returned object reducing the amount of objects you have to
+deal with when you're parsing command-line parameters.
+
 Simply invoking the <tt>to_s</tt> method on a parser instance will dump both the
 correct usage and any errors encountered during parsing. No need for you to manage
 the state of what's required and what isn't by yourself.
+
+Sometimes you have additional arguments you need to process that don't require
+a named option or flag. Whatever remains on the command line that doesn't fit
+either a flag or an option/value pair will be made available via the
+<tt>remainder</tt> method of the returned object.
 
 == PROBLEMS/DEFICIENCIES:
 

@@ -178,4 +178,11 @@ describe Clip do
     end
   end
 
+  describe "Additional arguments" do
+    it "should be made available" do
+      parser = parse('--files foo alpha bravo')
+      parser.files.should == %w[foo]
+      parser.remainder.should == %w[alpha bravo]
+    end
+  end
 end

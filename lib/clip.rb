@@ -16,6 +16,11 @@ module Clip
 
   class Parser
     ##
+    # Returns any remaining command line arguments that were not parsed
+    # because they were neither flags or option/value pairs
+    attr_reader :remainder
+
+    ##
     # Declare an optional parameter for your parser. This creates an accessor
     # method matching the <tt>name</tt> parameter. Options that use the '-'
     # character as a word separator are converted to method names using
@@ -107,6 +112,7 @@ module Clip
     def parse(args)
       @valid = true
       args = args.split(/\s+/) unless args.kind_of?(Array)
+      consumed = []
       if args.member?("--help")
         puts help
         exit 0
@@ -116,10 +122,14 @@ module Clip
       args.each do |token|
         case token
         when /^-(-)?\w/
+          consumed << token
           param = token.sub(/^-(-)?/, '').sub('-', '_').to_sym
           value = nil
         else
-          value = token
+          if param
+            consumed << token
+            value = token
+          end
         end
 
         option = options[param]
@@ -132,7 +142,14 @@ module Clip
           @valid = false
           next
         end
+
+        unless value.nil?
+          param = nil
+          value = nil
+        end
       end
+
+      @remainder = args - consumed
 
       # Find required options that are missing arguments
       options.each do |param, opt|
