@@ -5,7 +5,7 @@
 Yeah yeah yeah. Why in heaven's name do we need yet another
 command-line parser? Well, OptionParser is all well and good, but
 doesn't grease the skids as much as I'd like. So I wrote this little
-library, completely driven by specs.
+library... driven completely by specs.
 
 Cheers!
 
@@ -27,28 +27,34 @@ And it goes a little something like this...
   require "clip"
 
   parser = Clip do |p|
-    p.optional :host, :short => 'h', :desc => 'The host name', :default => 'localhost'
-    p.optional :port, :short => 'p', :desc => 'The port', :default => 8080
-    p.required :files, :short => 'f', :multi => true, :desc => 'Files to send'
-    p.flag :verbose, :short => 'v', :desc => 'Make it chatty'
+    p.optional 's', 'server', :desc => 'The server name', :default => 'localhost'
+    p.optional 'p', 'port', :desc => 'The port', :default => 8080
+    p.required 'f', 'files', :multi => true, :desc => 'Files to send'
+    p.flag     'v', 'verbose', :desc => 'Make it chatty'
   end
 
-  if parser.verbose?
-    puts parser.host
-    puts parser.port
-    puts 'files:'
-    parser.files.each do |f|
-      puts "\t#{f}"
+  if parser.valid?
+    if parser.verbose?
+      puts parser.host
+      puts parser.port
+      puts 'files:'
+      parser.files.each do |f|
+        puts "\t#{f}"
+      end
     end
+  else
+    # print error message(s) and usage
+    $stderr.puts parser.to_s
   end
 
 The names of the options and flags that you declare in the block are accessible
-as methods on the returned object reducing the amount of objects you have to
+as methods on the returned object, reducing the amount of objects you have to
 deal with when you're parsing command-line parameters.
 
 Simply invoking the <tt>to_s</tt> method on a parser instance will dump both the
 correct usage and any errors encountered during parsing. No need for you to manage
-the state of what's required and what isn't by yourself.
+the state of what's required and what isn't by yourself. Also, '--help' and '-h'
+will automatically trigger Clip to dump out usage and exit.
 
 Sometimes you have additional arguments you need to process that don't require
 a named option or flag. Whatever remains on the command line that doesn't fit

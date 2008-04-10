@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 ##
-# Parse arguments (defaults to <tt>ARGV</tt>) with the Parser
+# Parse arguments (defaults to <tt>ARGV</tt>) with the Clip::Parser
 # configured in the given block. This is the main method you
 # call to get the ball rolling.
 def Clip(args=ARGV)
@@ -29,7 +29,8 @@ module Clip
 
     ##
     # Declare an optional parameter for your parser. This creates an accessor
-    # method matching the <tt>name</tt> parameter. Options that use the '-'
+    # method matching the <tt>long</tt> parameter. The <tt>short</tt> parameter
+    # indicates the single-letter equivalent. Options that use the '-'
     # character as a word separator are converted to method names using
     # '_'. For example the name 'exclude-files' would create a method named
     # <tt>exclude_files</tt>.
@@ -38,7 +39,6 @@ module Clip
     # method will return an <tt>Array</tt> instead of a single scalar value.
     # === options
     # Valid options include:
-    # * <tt>short</tt>: a single-character version of your parameter
     # * <tt>desc</tt>: a helpful description (used for printing usage)
     # * <tt>default</tt>: a default value to provide if one is not given
     # * <tt>multi</tt>: indicates that mulitple values are okay for this param.
@@ -47,25 +47,24 @@ module Clip
     # can be specified several times with different values, or that a single
     # comma-separated value can be specified which will then be broken up into
     # separate tokens.
-    def optional(name, options={})
-      name = name.to_sym
-      check_args(name, options)
+    def optional(short, long, options={})
+      short = short.to_sym
+      long = long.to_sym
+      check_args(short, long)
 
       eval <<-EOF
-        def #{name}=(val)
-          @#{name} = val
+        def #{long}=(val)
+          @#{long} = val
         end
 
-        def #{name}
-          @#{name}
+        def #{long}
+          @#{long}
         end
       EOF
 
-      self.options[name] = Option.new(name, options)
-      self.order << self.options[name]
-      if options[:short]
-        self.options[options[:short].to_sym] = self.options[name]
-      end
+      self.options[long] = Option.new(short, long, options)
+      self.options[short] = self.options[long]
+      self.order << self.options[long]
     end
 
     alias_method :opt, :optional
@@ -76,40 +75,39 @@ module Clip
     # will be invalid (i.e. where valid? returns <tt>false</tt>).
     #
     # This method takes the same options as the optional method.
-    def required(name, options={})
-      optional(name, options.merge({ :required => true }))
+    def required(short, long, options={})
+      optional(short, long, options.merge({ :required => true }))
     end
 
     alias_method :req, :required
 
     ##
-    # Declare a parameter as a simple binary flag. This declaration
-    # will create a "question" method matching the given <tt>name</tt>.
+    # Declare a parameter as a simple boolean flag. This declaration
+    # will create a "question" method matching the given <tt>long</tt>.
     # For example, declaring with the name of 'verbose' will create a
-    # method your parser called <tt>verbose?</tt>.
+    # method on your parser called <tt>verbose?</tt>.
     # === options
     # Valid options are:
-    # * <tt>short</tt>: A single-character flag accepted for parsing
     # * <tt>desc</tt>: Descriptive text for the flag
-    def flag(name, options={})
-      name = name.to_sym
-      check_args(name, options)
+    def flag(short, long, options={})
+      short = short.to_sym
+      long = long.to_sym
+
+      check_args(short, long)
 
       eval <<-EOF
-        def flag_#{name}
-          @#{name} = true
+        def flag_#{long}
+          @#{long} = true
         end
 
-        def #{name}?
-          return @#{name} || false
+        def #{long}?
+          return @#{long} || false
         end
       EOF
 
-      self.options[name] = Flag.new(name, options)
-      self.order << self.options[name]
-      if options[:short]
-        self.options[options[:short].to_sym] = self.options[name]
-      end
+      self.options[long] = Flag.new(short, long, options)
+      self.options[short] = self.options[long]
+      self.order << self.options[long]
     end
 
     def initialize # :nodoc:
@@ -177,15 +175,18 @@ module Clip
     end
 
     ##
-    # Indicates whether or not the parsing process was valid.
-    # It only makes sense to call this _after_ calling +parse+.
+    # Indicates whether or not the parsing process succeeded. If this
+    # returns <tt>false</tt> you probably just want to print out a call
+    # to the to_s method.
     def valid?
       @valid
     end
 
     ##
-    # Returns a <tt>Hash</tt> of errors (by parameter) of any errors
-    # encountered during parsing.
+    # Returns a <tt>Hash</tt> of errors (by the long name) of any errors
+    # encountered during parsing. If you simply want to display error
+    # messages to the user, you can just print out a call to the
+    # to_s method.
     def errors
       @errors
     end
@@ -225,22 +226,24 @@ module Clip
     end
 
     private 
-    def check_args(name, options={})
-      name = name.to_sym
-      if name == :help
+    def check_args(short, long)
+      short = short.to_sym
+      long = long.to_sym
+
+      if long == :help
         raise IllegalConfiguration.new("You cannot override the built-in 'help' parameter")
       end
 
-      if options[:short] == 'h'
+      if short == :h
         raise IllegalConfiguration.new("You cannot override the built-in 'h' parameter")
       end
 
-      if self.options.has_key?(name)
-        raise IllegalConfiguration.new("You have already defined a parameter/flag for #{name}")
+      if self.options.has_key?(long)
+        raise IllegalConfiguration.new("You have already defined a parameter/flag for #{long}")
       end
 
-      if options[:short] && self.options[options[:short].to_sym]
-        raise IllegalConfiguration.new("You already have a defined parameter/flag for the short key '#{options[:short]}")
+      if self.options.has_key?(short)
+        raise IllegalConfiguration.new("You already have a defined parameter/flag for the short key '#{short}")
       end
     end
   end
@@ -248,9 +251,9 @@ module Clip
   class Option # :nodoc:
     attr_accessor :long, :short, :description, :default, :required, :multi
 
-    def initialize(name, options)
-      @long = name
-      @short = options[:short]
+    def initialize(short, long, options)
+      @short = short
+      @long = long
       @description = options[:desc]
       @default = options[:default]
       @required = options[:required]
@@ -280,9 +283,9 @@ module Clip
     end
   
     def usage
-      out = sprintf('--%-10s -%-2s %s',
-                    @long.to_s.gsub('_', '-').to_sym,
+      out = sprintf('-%-2s --%-10s %s',
                     @short,
+                    @long.to_s.gsub('_', '-').to_sym,
                     @description)
       out << " (defaults to '#{@default}')" if @default
       out << " REQUIRED" if @required
@@ -296,9 +299,9 @@ module Clip
 
     ##
     # nodoc
-    def initialize(name, options)
-      @long = name
-      @short = options[:short]
+    def initialize(short, long, options)
+      @short = short
+      @long = long
       @description = options[:desc]
     end
 
@@ -315,7 +318,7 @@ module Clip
     end
   
     def usage
-      sprintf('--%-10s -%-2s %s', @long, @short, @description)
+      sprintf('-%-2s --%-10s %s', @short, @long, @description)
     end
   end
 end

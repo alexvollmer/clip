@@ -5,10 +5,10 @@ require File.join(File.dirname(__FILE__), "../lib/clip")
 ##
 # This is a very simple example of how to use Clip
 p = Clip do |c|
-  c.optional :server, :short => 's', :desc => 'The server name', :default => 'localhost'
-  c.optional :port, :short => 'p', :desc => 'The port', :default => 8080
-  c.optional :files, :short => 'f', :desc => 'Files to upload', :multi => true
-  c.flag :verbose, :short => 'v', :desc => 'Make it verbose, man'
+  c.optional 's', 'server', :desc => 'The server name', :default => 'localhost'
+  c.optional 'p', 'port', :desc => 'The port', :default => 8080
+  c.optional 'f', 'files', :desc => 'Files to upload', :multi => true
+  c.flag 'v', 'verbose', :desc => 'Make it verbose, man'
 end
   
 printf("%10s %-20s\n", "attribute", "value")

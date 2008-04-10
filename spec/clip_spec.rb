@@ -49,11 +49,11 @@ describe Clip do
 
   def parse(line)
     Clip(line) do |p|
-      p.flag :verbose, :short => 'v', :desc => 'Provide verbose output'
-      p.optional :server, :short => 's', :desc => 'The hostname', :default => 'localhost'
-      p.optional :port, :short => 'p', :desc => 'The port number', :default => 8080
-      p.required :files, :short => 'f', :desc => 'Files to upload', :multi => true
-      p.optional :exclude_from, :short => 'e', :desc => 'Directories to exclude'
+      p.flag 'v', 'verbose', :desc => 'Provide verbose output'
+      p.optional 's', 'server', :desc => 'The hostname', :default => 'localhost'
+      p.optional 'p', 'port', :desc => 'The port number', :default => 8080
+      p.required 'f', 'files', :desc => 'Files to upload', :multi => true
+      p.optional 'e', 'exclude_from', :desc => 'Directories to exclude'
     end
   end
 
@@ -160,11 +160,11 @@ describe Clip do
     it "should print out some sensible usage info for to_s" do
       out = parse('--files foo').to_s.split("\n")
       out[0].should match(/Usage/)
-      out[1].should match(/--verbose\s+-v\s+Provide verbose output/)
-      out[2].should match(/--server\s+-s\s+The hostname.*default.*localhost/)
-      out[3].should match(/--port\s+-p\s+The port number/)
-      out[4].should match(/--files\s+-f\s+Files to upload.*REQUIRED/)
-      out[5].should match(/--exclude-from\s+-e\s+Directories to exclude/)
+      out[1].should match(/-v\s+--verbose\s+Provide verbose output/)
+      out[2].should match(/-s\s+--server\s+The hostname.*default.*localhost/)
+      out[3].should match(/-p\s+--port\s+The port number/)
+      out[4].should match(/-f\s+--files\s+Files to upload.*REQUIRED/)
+      out[5].should match(/-e\s+--exclude-from\s+Directories to exclude/)
     end
 
     it "should include error messages in to_s" do
@@ -195,74 +195,74 @@ describe Clip do
     end
 
     it "should reject :help as a flag name" do
-      misconfig_parser { |c| c.flag :help }
+      misconfig_parser { |c| c.flag 'x', 'help' }
     end
 
     it "should reject :help as an optional name" do
-      misconfig_parser { |c| c.optional :help, :should => 'x' }
+      misconfig_parser { |c| c.optional 'x', 'help' }
     end
 
     it "should reject 'h' as a short flag name" do
-      misconfig_parser { |c| c.flag :foo, :short => 'h' }
+      misconfig_parser { |c| c.flag 'h', 'foo' }
     end
 
     it "should reject 'h' as a short parameter name" do
-      misconfig_parser { |c| c.optional :foo, :short => 'h' }
+      misconfig_parser { |c| c.optional 'h', 'foo' }
     end
 
     it "should reject redefining an existing long name for two options" do
       misconfig_parser do |c|
-        c.optional :foo
-        c.optional :foo
+        c.optional 'f', 'foo'
+        c.optional 'x', 'foo'
       end
     end
 
     it "should reject redefining an existing long name for an option & flag" do
       misconfig_parser do |c|
-        c.optional :foo
-        c.flag :foo
+        c.optional 'f', 'foo'
+        c.flag 'x', 'foo'
       end
     end
 
     it "should reject redefining the same flag" do
       misconfig_parser do |c|
-        c.flag :foo
-        c.flag :foo
+        c.flag 'f', 'foo'
+        c.flag 'x', 'foo'
       end
     end
 
     it "should reject defining a flag with an option" do
       misconfig_parser do |c|
-        c.flag :foo
-        c.optional :foo
+        c.flag 'f', 'foo'
+        c.optional 'x', 'foo'
       end
     end
 
     it "should reject redefining an existing short name for options" do
       misconfig_parser do |c|
-        c.optional :foo, :short => 'f'
-        c.optional :files, :short => 'f'
+        c.optional 'f', 'foo'
+        c.optional 'f', 'files'
       end
     end
 
     it "should reject redefining a short option with a flag" do
       misconfig_parser do |c|
-        c.optional :foo, :short => 'f'
-        c.flag :fail, :short => 'f'
+        c.optional 'f', 'foo'
+        c.flag 'f', 'fail'
       end
     end
 
     it "should reject redefining a short flag with a flag" do
       misconfig_parser do |c|
-        c.flag :fail, :short => 'f'
-        c.flag :foo, :short => 'f'
+        c.flag 'f', 'fail'
+        c.flag 'f', 'foo'
       end
     end
 
     it "should reject redefining a flag with an optional" do
       misconfig_parser do |c|
-        c.flag :fail, :short => 'f'
-        c.optional :foo, :short => 'f'
+        c.flag 'f', 'fail'
+        c.optional 'f', 'foo'
       end
     end
   end
