@@ -12,12 +12,12 @@ Cheers!
 == FEATURES
 
 You like command-line parsing, but you hate all of the bloat. Why
-should you have to create a Hash, then create a parser, then fill
-that Hash out then throw the parser away (unless you want to print
-out a usage message) and deal with a Hash? Why, for Pete's sake, should
-the parser and the parsed values be handled by two different objects?
+should you have to create a Hash, then create a parser, fill the Hash
+out then throw the parser away (unless you want to print out a usage
+message) and deal with a Hash? Why, for Pete's sake, should the parser
+and the parsed values be handled by two different objects?
 
-Well, now they don't...
+Introducing Clip...
 
 == SYNOPSIS:
 
