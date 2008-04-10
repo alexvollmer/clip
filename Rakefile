@@ -5,7 +5,10 @@ require 'hoe'
 require './lib/clip.rb'
 
 Hoe.new('clip', Clip::VERSION) do |p|
-  p.developer('Alex Vollmer', nil)
+  p.name = 'clip'
+  p.developer('Alex Vollmer', 'alex.vollmer@gmail.com')
+  p.summary = 'Command-line parsing made short and sweet'
+  p.url = 'http://clip.rubyforge.org'
 end
 
 require "spec/rake/spectask"
@@ -29,6 +32,7 @@ task :sync_there do
   puts %x(rsync \
       --verbose \
       --recursive \
+      --dry-run \
       --delete \
       #{HERE}/ #{THERE}})
 end
