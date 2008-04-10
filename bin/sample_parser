@@ -5,21 +5,13 @@ require File.join(File.dirname(__FILE__), "../lib/clip")
 ##
 # This is a very simple example of how to extend and use the
 # Clip::Parser class.
-class SampleParser < Clip::Parser
-  optional :host, :short => 'h', :desc => 'The hostname', :default => 'localhost'
-  optional :port, :short => 'p', :desc => 'The port', :default => 8080
-  flag :verbose, :short => 'v', :desc => 'Make it verbose, man'
-  
-  def dump
-    out = ""
-    out << sprintf("%10s %-20s\n", "attribute", "value")
-    [:host, :port, :verbose?].each do |att|
-      out << sprintf("%10s %-20s\n", att, send(att))
-    end
-    out
-  end
+p = Clip.parse do |c|
+  c.optional :server, :short => 's', :desc => 'The server name', :default => 'localhost'
+  c.optional :port, :short => 'p', :desc => 'The port', :default => 8080
+  c.flag :verbose, :short => 'v', :desc => 'Make it verbose, man'
 end
-
-parser = SampleParser.new
-parser.parse(ARGV)
-puts parser.dump
+  
+printf("%10s %-20s\n", "attribute", "value")
+[:server, :port, :verbose?].each do |att|
+  printf("%10s %-20s\n", att, p.send(att))
+end
