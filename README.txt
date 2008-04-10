@@ -26,7 +26,7 @@ And it goes a little something like this...
   require "rubygems"
   require "clip"
 
-  parser = Clip.parse do |p|
+  parser = Clip do |p|
     p.optional :host, :short => 'h', :desc => 'The host name', :default => 'localhost'
     p.optional :port, :short => 'p', :desc => 'The port', :default => 8080
     p.required :files, :short => 'f', :multi => true, :desc => 'Files to send'

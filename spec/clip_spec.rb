@@ -45,11 +45,10 @@ def have_errors_on(expected)
   HaveErrorsOn.new(expected)
 end
 
-
 describe Clip do
 
   def parse(line)
-    Clip.parse(line) do |p|
+    Clip(line) do |p|
       p.flag :verbose, :short => 'v', :desc => 'Provide verbose output'
       p.optional :server, :short => 's', :desc => 'The hostname', :default => 'localhost'
       p.optional :port, :short => 'p', :desc => 'The port number', :default => 8080
@@ -189,7 +188,7 @@ describe Clip do
 
     def misconfig_parser
       lambda do
-        Clip.parse("foo") do |c|
+        Clip("foo") do |c|
           yield c
         end
       end.should raise_error(Clip::IllegalConfiguration)

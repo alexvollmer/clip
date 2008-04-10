@@ -1,5 +1,17 @@
 #!/usr/bin/env ruby
 
+##
+# Parse arguments (defaults to <tt>ARGV</tt>) with the Parser
+# configured in the given block. This is the main method you
+# call to get the ball rolling.
+def Clip(args=ARGV)
+  parser = Clip::Parser.new
+  raise "Dontcha wanna configure your parser?" unless block_given?
+  yield parser
+  parser.parse(args)
+  parser
+end
+
 module Clip
   VERSION = "0.0.1"
 
@@ -7,17 +19,6 @@ module Clip
   # Indicates that the parser was incorrectly configured in the
   # block yielded by the +parse+ method.
   class IllegalConfiguration < Exception
-  end
-
-  ##
-  # Parse arguments (defaults to <tt>ARGV</tt>) with the Parser
-  # configured in the given block.
-  def self.parse(args=ARGV)
-    parser = Parser.new
-    raise "Dontcha wanna configure your parser?" unless block_given?
-    yield parser
-    parser.parse(args)
-    parser
   end
 
   class Parser
