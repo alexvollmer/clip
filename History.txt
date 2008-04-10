@@ -1,3 +1,4 @@
 === 0.0.1 / 2008-04-03
 
-* Just gettin' started
+* Initial release for y'all to throw rotten veggies at
+
