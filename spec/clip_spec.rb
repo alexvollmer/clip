@@ -51,7 +51,7 @@ describe Clip do
   def parse(line)
     Clip.parse(line) do |p|
       p.flag :verbose, :short => 'v', :desc => 'Provide verbose output'
-      p.optional :host, :short => 'h', :desc => 'The hostname', :default => 'localhost'
+      p.optional :server, :short => 's', :desc => 'The hostname', :default => 'localhost'
       p.optional :port, :short => 'p', :desc => 'The port number', :default => 8080
       p.required :files, :short => 'f', :desc => 'Files to upload', :multi => true
       p.optional :exclude_from, :short => 'e', :desc => 'Directories to exclude'
@@ -62,8 +62,8 @@ describe Clip do
 
     it "should create accessor methods for declarations" do
       parser = parse('')
-      parser.should respond_to(:host)
-      parser.should respond_to(:host=)
+      parser.should respond_to(:server)
+      parser.should respond_to(:server=)
       parser.should respond_to(:port)
       parser.should respond_to(:port)
       parser.should respond_to(:files)
@@ -80,8 +80,8 @@ describe Clip do
     end
   
     it "should set fields for flags with the given values" do
-      parser = parse('--host localhost --port 8080 --files foo')
-      parser.host.should eql("localhost")
+      parser = parse('--server localhost --port 8080 --files foo')
+      parser.server.should eql("localhost")
       parser.port.should eql("8080")
       parser.should be_valid
       parser.should_not have_errors
@@ -111,10 +111,10 @@ describe Clip do
     end
   
     it "should set fields for short options" do
-      parser = parse("-h localhost -p 8080 --files foo")
+      parser = parse("-s localhost -p 8080 --files foo")
       parser.should_not have_errors
       parser.should be_valid
-      parser.host.should eql("localhost")
+      parser.server.should eql("localhost")
       parser.port.should eql("8080")
       parser.should_not be_verbose
     end
@@ -123,7 +123,7 @@ describe Clip do
   describe "When parameters are marked as required" do
   
     it "should be invalid when there are missing arguments" do
-      parser = parse('--host localhost')
+      parser = parse('--server localhost')
       parser.should_not be_valid
       parser.should have_errors_on(:files)
     end
@@ -135,7 +135,7 @@ describe Clip do
       parser = parse('--files foo')
       parser.should be_valid
       parser.should_not have_errors
-      parser.host.should eql("localhost")
+      parser.server.should eql("localhost")
       parser.port.should eql(8080)
     end
   end
@@ -162,12 +162,11 @@ describe Clip do
       out = parse('--files foo').to_s.split("\n")
       out[0].should match(/Usage/)
       out[1].should match(/--verbose\s+-v\s+Provide verbose output/)
-      out[2].should match(/--host\s+-h\s+The hostname.*default.*localhost/)
+      out[2].should match(/--server\s+-s\s+The hostname.*default.*localhost/)
       out[3].should match(/--port\s+-p\s+The port number/)
       out[4].should match(/--files\s+-f\s+Files to upload.*REQUIRED/)
       out[5].should match(/--exclude-from\s+-e\s+Directories to exclude/)
     end
-
 
     it "should include error messages in to_s" do
       parser = parse('')
@@ -183,6 +182,89 @@ describe Clip do
       parser = parse('--files foo alpha bravo')
       parser.files.should == %w[foo]
       parser.remainder.should == %w[alpha bravo]
+    end
+  end
+
+  describe "Declaring bad options and flags" do
+
+    def misconfig_parser
+      lambda do
+        Clip.parse("foo") do |c|
+          yield c
+        end
+      end.should raise_error(Clip::IllegalConfiguration)
+    end
+
+    it "should reject :help as a flag name" do
+      misconfig_parser { |c| c.flag :help }
+    end
+
+    it "should reject :help as an optional name" do
+      misconfig_parser { |c| c.optional :help, :should => 'x' }
+    end
+
+    it "should reject 'h' as a short flag name" do
+      misconfig_parser { |c| c.flag :foo, :short => 'h' }
+    end
+
+    it "should reject 'h' as a short parameter name" do
+      misconfig_parser { |c| c.optional :foo, :short => 'h' }
+    end
+
+    it "should reject redefining an existing long name for two options" do
+      misconfig_parser do |c|
+        c.optional :foo
+        c.optional :foo
+      end
+    end
+
+    it "should reject redefining an existing long name for an option & flag" do
+      misconfig_parser do |c|
+        c.optional :foo
+        c.flag :foo
+      end
+    end
+
+    it "should reject redefining the same flag" do
+      misconfig_parser do |c|
+        c.flag :foo
+        c.flag :foo
+      end
+    end
+
+    it "should reject defining a flag with an option" do
+      misconfig_parser do |c|
+        c.flag :foo
+        c.optional :foo
+      end
+    end
+
+    it "should reject redefining an existing short name for options" do
+      misconfig_parser do |c|
+        c.optional :foo, :short => 'f'
+        c.optional :files, :short => 'f'
+      end
+    end
+
+    it "should reject redefining a short option with a flag" do
+      misconfig_parser do |c|
+        c.optional :foo, :short => 'f'
+        c.flag :fail, :short => 'f'
+      end
+    end
+
+    it "should reject redefining a short flag with a flag" do
+      misconfig_parser do |c|
+        c.flag :fail, :short => 'f'
+        c.flag :foo, :short => 'f'
+      end
+    end
+
+    it "should reject redefining a flag with an optional" do
+      misconfig_parser do |c|
+        c.flag :fail, :short => 'f'
+        c.optional :foo, :short => 'f'
+      end
     end
   end
 end

@@ -4,6 +4,12 @@ module Clip
   VERSION = "0.0.1"
 
   ##
+  # Indicates that the parser was incorrectly configured in the
+  # block yielded by the +parse+ method.
+  class IllegalConfiguration < Exception
+  end
+
+  ##
   # Parse arguments (defaults to <tt>ARGV</tt>) with the Parser
   # configured in the given block.
   def self.parse(args=ARGV)
@@ -42,6 +48,8 @@ module Clip
     # separate tokens.
     def optional(name, options={})
       name = name.to_sym
+      check_args(name, options)
+
       eval <<-EOF
         def #{name}=(val)
           @#{name} = val
@@ -83,6 +91,9 @@ module Clip
     # * <tt>short</tt>: A single-character flag accepted for parsing
     # * <tt>desc</tt>: Descriptive text for the flag
     def flag(name, options={})
+      name = name.to_sym
+      check_args(name, options)
+
       eval <<-EOF
         def flag_#{name}
           @#{name} = true
@@ -212,6 +223,25 @@ module Clip
       (@order ||= [])
     end
 
+    private 
+    def check_args(name, options={})
+      name = name.to_sym
+      if name == :help
+        raise IllegalConfiguration.new("You cannot override the built-in 'help' parameter")
+      end
+
+      if options[:short] == 'h'
+        raise IllegalConfiguration.new("You cannot override the built-in 'h' parameter")
+      end
+
+      if self.options.has_key?(name)
+        raise IllegalConfiguration.new("You have already defined a parameter/flag for #{name}")
+      end
+
+      if options[:short] && self.options[options[:short].to_sym]
+        raise IllegalConfiguration.new("You already have a defined parameter/flag for the short key '#{options[:short]}")
+      end
+    end
   end
 
   class Option # :nodoc:
