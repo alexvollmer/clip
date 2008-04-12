@@ -35,7 +35,6 @@ task :sync_there do
   puts %x(rsync \
       --verbose \
       --recursive \
-      --dry-run \
       --delete \
       #{HERE}/ #{THERE}})
 end
