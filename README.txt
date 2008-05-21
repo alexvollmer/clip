@@ -28,7 +28,9 @@ And it goes a little something like this...
 
   options = Clip do |p|
     p.optional 's', 'server', :desc => 'The server name', :default => 'localhost'
-    p.optional 'p', 'port', :desc => 'The port', :default => 8080
+    p.optional 'p', 'port', :desc => 'The port', :default => 8080 do |v|
+      v.to_i # always deal with integers
+    end
     p.required 'f', 'files', :multi => true, :desc => 'Files to send'
     p.flag     'v', 'verbose', :desc => 'Make it chatty'
   end
@@ -51,6 +53,11 @@ The names of the options and flags that you declare in the block are accessible
 as methods on the returned object, reducing the amount of objects you have to
 deal with when you're parsing command-line parameters.
 
+You can optionally process parsed arguments by passing a block to the
+<tt>required</tt> or <tt>optional</tt> methods which will set the value of the
+option to the result of the block. The block will receive the parsed value and
+should return whatever transformed value that is appropriate to your use case.
+
 Simply invoking the <tt>to_s</tt> method on a parser instance will dump both the
 correct usage and any errors encountered during parsing. No need for you to manage
 the state of what's required and what isn't by yourself. Also, '--help' and '-h'
@@ -60,13 +67,6 @@ Sometimes you have additional arguments you need to process that don't require
 a named option or flag. Whatever remains on the command line that doesn't fit
 either a flag or an option/value pair will be made available via the
 <tt>remainder</tt> method of the returned object.
-
-== PROBLEMS/DEFICIENCIES:
-
-OK, some of your favorite <tt>OptionParser</tt> features are simply not here.
-You know that cool thing you can do where you tell <tt>OptionParser</tt> the
-class of the kind of object you would like to get for a particular argument?
-Do you like that one? Well, too bad. We don't have that one. Deal with it.
 
 == LICENSE:
 

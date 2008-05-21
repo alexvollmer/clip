@@ -1,3 +1,8 @@
 === 0.0.1 / 2008-04-10
 
 * Initial release for y'all to throw rotten veggies at.
+
+=== 0.0.2 / 2008-05-20
+
+* Cleaned up README
+* Added support for late-binding option processing with blocks
