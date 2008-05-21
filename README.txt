@@ -26,25 +26,25 @@ And it goes a little something like this...
   require "rubygems"
   require "clip"
 
-  parser = Clip do |p|
+  options = Clip do |p|
     p.optional 's', 'server', :desc => 'The server name', :default => 'localhost'
     p.optional 'p', 'port', :desc => 'The port', :default => 8080
     p.required 'f', 'files', :multi => true, :desc => 'Files to send'
     p.flag     'v', 'verbose', :desc => 'Make it chatty'
   end
 
-  if parser.valid?
-    if parser.verbose?
-      puts parser.host
-      puts parser.port
+  if options.valid?
+    if options.verbose?
+      puts options.host
+      puts options.port
       puts 'files:'
-      parser.files.each do |f|
+      options.files.each do |f|
         puts "\t#{f}"
       end
     end
   else
     # print error message(s) and usage
-    $stderr.puts parser.to_s
+    $stderr.puts options.to_s
   end
 
 The names of the options and flags that you declare in the block are accessible
