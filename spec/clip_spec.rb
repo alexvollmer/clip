@@ -276,4 +276,16 @@ describe Clip do
       end
     end
   end
+
+  describe "when specifying a block for a parameter" do
+    it "should run the block" do
+      opts = Clip("-v 123") do |c|
+        c.req 'v', 'value', :desc => 'The value' do |v|
+          v.to_i
+        end
+      end
+      
+      opts.value.should == 123
+    end
+  end
 end

@@ -48,25 +48,31 @@ module Clip
     # * <tt>desc</tt>: a helpful description (used for printing usage)
     # * <tt>default</tt>: a default value to provide if one is not given
     # * <tt>multi</tt>: indicates that mulitple values are okay for this param.
+    # * <tt>block</tt>: an optional block to process the parsed value
     #
     # Note that specifying the <tt>:multi</tt> option means that the parameter
     # can be specified several times with different values, or that a single
     # comma-separated value can be specified which will then be broken up into
     # separate tokens.
-    def optional(short, long, options={})
+    def optional(short, long, options={}, &block)
       short = short.to_sym
       long = long.to_sym
       check_args(short, long)
 
-      eval <<-EOF
-        def #{long}=(val)
-          @#{long} = val
+      var_name = "@#{long}".to_sym
+      if block
+        self.class.send(:define_method, "#{long}=".to_sym) do |v|
+          instance_variable_set(var_name, block.call(v))
         end
+      else
+        self.class.send(:define_method, "#{long}=".to_sym) do |v|
+          instance_variable_set(var_name, v)
+        end
+      end
 
-        def #{long}
-          @#{long}
-        end
-      EOF
+      self.class.send(:define_method, long.to_sym) do
+        instance_variable_get(var_name)        
+      end
 
       self.options[long] = Option.new(short, long, options)
       self.options[short] = self.options[long]
@@ -81,8 +87,8 @@ module Clip
     # will be invalid (i.e. where valid? returns <tt>false</tt>).
     #
     # This method takes the same options as the optional method.
-    def required(short, long, options={})
-      optional(short, long, options.merge({ :required => true }))
+    def required(short, long, options={}, &block)
+      optional(short, long, options.merge({ :required => true }), &block)
     end
 
     alias_method :req, :required

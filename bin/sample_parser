@@ -6,7 +6,9 @@ require File.join(File.dirname(__FILE__), "../lib/clip")
 # This is a very simple example of how to use Clip
 p = Clip do |c|
   c.optional 's', 'server', :desc => 'The server name', :default => 'localhost'
-  c.optional 'p', 'port', :desc => 'The port', :default => 8080
+  c.optional 'p', 'port', :desc => 'The port', :default => 8080 do |v|
+    v.to_i
+  end
   c.optional 'f', 'files', :desc => 'Files to upload', :multi => true
   c.flag 'v', 'verbose', :desc => 'Make it verbose, man'
 end
