@@ -174,6 +174,16 @@ describe Clip do
       out[1].should match(/missing required.*files/i)
       out[2..-1].join("\n").strip.should == parser.help.strip
     end
+
+    it "should support declaring a banner" do
+      opts = Clip('-v') do |p|
+        p.banner = "USAGE foo bar baz"
+        p.flag 'v', 'verbose', :desc => 'Provide verbose output'
+      end
+
+      out = opts.to_s.split("\n")
+      out[0].should == 'USAGE foo bar baz'
+    end
   end
 
   describe "Additional arguments" do

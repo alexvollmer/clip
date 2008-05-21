@@ -28,6 +28,12 @@ module Clip
     attr_reader :remainder
 
     ##
+    # Set the usage 'banner' displayed when calling <tt>to_s</tt> to
+    # display the usage message. If not set, the default will be used.
+    # If the value is set this completely replaces the default
+    attr_accessor :banner
+
+    ##
     # Declare an optional parameter for your parser. This creates an accessor
     # method matching the <tt>long</tt> parameter. The <tt>short</tt> parameter
     # indicates the single-letter equivalent. Options that use the '-'
@@ -195,7 +201,12 @@ module Clip
     # Returns a formatted <tt>String</tt> indicating the usage of the parser
     def help
       out = ""
-      out << "Usage:\n"
+      if banner
+        out << "#{banner}\n"
+      else
+        out << "Usage:\n"
+      end
+
       order.each do |option|
         out << "#{option.usage}\n"
       end
