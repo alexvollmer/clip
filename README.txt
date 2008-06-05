@@ -68,6 +68,15 @@ a named option or flag. Whatever remains on the command line that doesn't fit
 either a flag or an option/value pair will be made available via the
 <tt>remainder</tt> method of the returned object.
 
+Sometimes even passing a block is overkill. Say you want to grab just
+a hash from a set of name/value argument pairs provided:
+
+  $ my_clip_script subcommand -c config.yml # Allows:
+  Clip.hash == { 'c' => 'config.yml' }
+
+  $ my_clip_script -c config.yml --mode optimistic # Allows:
+   Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
+
 == LICENSE:
 
 (The MIT License)

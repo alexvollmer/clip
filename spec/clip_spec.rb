@@ -294,7 +294,7 @@ describe Clip do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
     end
 
-    it "should only take an even number of options" do
+    it "should only use pairs of dash + value args" do
       Clip.hash(['-c', 'config.yml',
                  '-d']).should == { 'c' => 'config.yml' }
     end
