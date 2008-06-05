@@ -345,14 +345,20 @@ module Clip
   #
   #  my_clip_script -c config.yml # Clip.hash == { 'c' => 'config.yml' }
   #  my_clip_script command -c config.yml # Clip.hash == { 'c' => 'config.yml' }
-  #  my_clip_script command -c config.yml -d # Clip.hash == { 'c' => 'config.yml' }
-  #  my_clip_script -c config.yml --mode optimistic # Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
-  #
+  #  my_clip_script com -c config.yml -d # Clip.hash == { 'c' => 'config.yml' }
+  #  my_clip_script -c config.yml --mode optimistic
+  #  # Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
   def self.hash(argv = ARGV.dup, values = [])
-    argv.shift until argv.first =~ HASHER_REGEX
-    while argv.first =~ HASHER_REGEX and argv.size >= 2 do
-      values += [argv.shift.sub(/^--?/, ''), argv.shift]
+    @hash ||= begin
+      argv.shift until argv.first =~ HASHER_REGEX
+      while argv.first =~ HASHER_REGEX and argv.size >= 2 do
+        values += [argv.shift.sub(/^--?/, ''), argv.shift]
+      end
+      Hash[*values]
     end
-    Hash[*values]
   end
+
+  ##
+  # Clear the cached hash value. Probably only useful for tests, but whatever.
+  def Clip.reset_hash!; @hash = nil end
 end

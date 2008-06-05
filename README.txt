@@ -3,9 +3,9 @@
 == DESCRIPTION:
 
 Yeah yeah yeah. Why in heaven's name do we need yet another
-command-line parser? Well, OptionParser is all well and good, but
-doesn't grease the skids as much as I'd like. So I wrote this little
-library... driven completely by specs.
+command-line parser? Well, OptionParser is all well and good[1], but
+doesn't grease the skids as much as I'd like. Simple things should be
+dead simple (1 LOC), and more flexibility is there if you need it.
 
 Cheers!
 
@@ -76,6 +76,10 @@ a hash from a set of name/value argument pairs provided:
 
   $ my_clip_script -c config.yml --mode optimistic # Allows:
    Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
+
+----------------------------------------
+
+[1] - Not really.
 
 == LICENSE:
 

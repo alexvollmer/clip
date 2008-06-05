@@ -290,6 +290,8 @@ describe Clip do
   end
 
   describe "when parsing ARGV as a hash" do
+    setup { Clip.reset_hash! }
+    
     it "should make sense of '-c my_config.yml'" do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
     end
