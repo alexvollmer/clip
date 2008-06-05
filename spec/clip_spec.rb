@@ -288,4 +288,25 @@ describe Clip do
       opts.value.should == 123
     end
   end
+
+  describe "when parsing ARGV as a hash" do
+    it "should make sense of '-c my_config.yml'" do
+      Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
+    end
+
+    it "should only take an even number of options" do
+      Clip.hash(['-c', 'config.yml',
+                 '-d']).should == { 'c' => 'config.yml' }
+    end
+
+    it "should ignore leading/trailing non-dashed arguments" do
+      Clip.hash(['subcommand', '-c', 'config.yml',
+                 'do']).should == { 'c' => 'config.yml' }
+    end
+
+    it "should allow -s (short) or --long arguments" do
+      Clip.hash(['-c', 'config.yml', '--mode', 'optimistic']).
+        should == { 'c' => 'config.yml', 'mode' => 'optimistic' }
+    end
+  end
 end

@@ -38,3 +38,5 @@ task :sync_there do
       --delete \
       #{HERE}/ #{THERE}})
 end
+
+task :default => :spec

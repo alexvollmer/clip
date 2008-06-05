@@ -13,7 +13,7 @@ def Clip(args=ARGV)
 end
 
 module Clip
-  VERSION = "0.0.2"
+  VERSION = "0.0.3"
 
   ##
   # Indicates that the parser was incorrectly configured in the
@@ -337,5 +337,22 @@ module Clip
     def usage
       sprintf('-%-2s --%-10s %s', @short, @long, @description)
     end
+  end
+
+  HASHER_REGEX = /^--?\w+/
+  ##
+  # Turns ARGV into a hash.
+  #
+  #  my_clip_script -c config.yml # Clip.hash == { 'c' => 'config.yml' }
+  #  my_clip_script command -c config.yml # Clip.hash == { 'c' => 'config.yml' }
+  #  my_clip_script command -c config.yml -d # Clip.hash == { 'c' => 'config.yml' }
+  #  my_clip_script -c config.yml --mode optimistic # Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
+  #
+  def self.hash(argv = ARGV.dup, values = [])
+    argv.shift until argv.first =~ HASHER_REGEX
+    while argv.first =~ HASHER_REGEX and argv.size >= 2 do
+      values += [argv.shift.sub(/^--?/, ''), argv.shift]
+    end
+    Hash[*values]
   end
 end
