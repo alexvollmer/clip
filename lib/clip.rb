@@ -160,7 +160,7 @@ module Clip
             option.process(self, value)
           end
         else
-          @errors[param] = "Unrecoginzed parameter"
+          @errors[param] = "Unrecognized parameter"
           @valid = false
           next
         end
