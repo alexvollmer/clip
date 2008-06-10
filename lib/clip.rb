@@ -13,7 +13,7 @@ def Clip(args=ARGV)
 end
 
 module Clip
-  VERSION = "0.0.3"
+  VERSION = "0.0.4"
 
   ##
   # Indicates that the parser was incorrectly configured in the
@@ -350,7 +350,7 @@ module Clip
   #  # Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
   def self.hash(argv = ARGV.dup, values = [])
     @hash ||= begin
-      argv.shift until argv.first =~ HASHER_REGEX
+      argv.shift until argv.first =~ HASHER_REGEX or argv.empty?
       while argv.first =~ HASHER_REGEX and argv.size >= 2 do
         values += [argv.shift.sub(/^--?/, ''), argv.shift]
       end
