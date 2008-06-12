@@ -1,5 +1,4 @@
 History.txt
 README.txt
-bin/sample_parser
 lib/clip.rb
 spec/clip_spec.rb

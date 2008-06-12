@@ -310,5 +310,9 @@ describe Clip do
       Clip.hash(['-c', 'config.yml', '--mode', 'optimistic']).
         should == { 'c' => 'config.yml', 'mode' => 'optimistic' }
     end
+    
+    it "should return an empty hash for empty ARGV" do
+      Clip.hash([]).should == {}
+    end
   end
 end
