@@ -1,16 +1,21 @@
-=== 0.0.1 / 2008-04-10
+=== 0.0.5 / 2008-06-12
 
-* Initial release for y'all to throw rotten veggies at.
+* Removed sample_parser from bin (technomancy)
+* fix a stupid bug causing an infinite loop for empty ARGV (technomancy)
+
+=== 0.0.4 / 2008-06-06
+
+* Fixed typo in error message (thanks francois!)
+
+=== 0.0.3 / 2008-06-05
+
+* Merged technomancy's patches for simple 1 LOC parsing -> hash
 
 === 0.0.2 / 2008-05-20
 
 * Cleaned up README
 * Added support for late-binding option processing with blocks
 
-=== 0.0.3 / 2008-06-05
+=== 0.0.1 / 2008-04-10
 
-* Merged technomancy's patches for simple 1 LOC parsing -> hash
-
-=== 0.0.4 / 2008-06-06
-
-* Fixed typo in error message (thanks francois!)
+* Initial release for y'all to throw rotten veggies at.
