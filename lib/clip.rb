@@ -139,35 +139,30 @@ module Clip
         puts help
         exit 0
       end
-      param, value = nil, nil
+      option = nil
     
       args.each do |token|
         case token
         when /^-(-)?\w/
           consumed << token
           param = token.sub(/^-(-)?/, '').sub('-', '_').to_sym
-          value = nil
+          option = options[param]
+          unless option
+            @errors[param] = "Unrecognized parameter"
+            @valid = false
+            next
+          end
+
+          if option.kind_of?(Flag)
+            option.process(self, nil)
+            option = nil
+          end
         else
-          if param
+          if option
             consumed << token
-            value = token
+            option.process(self, token)
+            option = nil
           end
-        end
-
-        option = options[param]
-        if option
-          if (value.nil? && option.kind_of?(Flag)) || value
-            option.process(self, value)
-          end
-        else
-          @errors[param] = "Unrecognized parameter"
-          @valid = false
-          next
-        end
-
-        unless value.nil?
-          param = nil
-          value = nil
         end
       end
 

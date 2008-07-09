@@ -186,11 +186,31 @@ describe Clip do
     end
   end
 
-  describe "Additional arguments" do
+  describe "Remaining arguments" do
     it "should be made available" do
       parser = parse('--files foo alpha bravo')
       parser.files.should == %w[foo]
       parser.remainder.should == %w[alpha bravo]
+    end
+
+    it "should be available when only flags are declared" do
+      opts = Clip('foobar') do |p|
+        p.flag 'v', 'verbose'
+        p.flag 'd', 'debug'
+      end
+      opts.remainder.should == ['foobar']
+      opts.should_not be_verbose
+      opts.should_not be_debug
+    end
+
+    it "should be available when flags are declared and parsed" do
+      opts = Clip('-v foobar') do |p|
+        p.flag 'v', 'verbose'
+        p.flag 'd', 'debug'
+      end
+      opts.remainder.should == ['foobar']
+      opts.should be_verbose
+      opts.should_not be_debug
     end
   end
 
