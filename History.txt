@@ -1,3 +1,7 @@
+=== 0.0.6 / 2008-07-10
+
+* Fixed a bug with getting the 'remainder' when only flags are declared.
+
 === 0.0.5 / 2008-06-12
 
 * Removed sample_parser from bin (technomancy)
