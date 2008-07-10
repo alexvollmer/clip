@@ -335,4 +335,27 @@ describe Clip do
       Clip.hash([]).should == {}
     end
   end
+
+  describe "stopping parsing after finding --" do
+    it "should not blow up" do
+      opts = Clip('--') {|p|}
+      opts.should be_valid
+      opts.remainder.should be_empty
+    end
+
+    it "should not parse after --" do
+      opts = Clip('-- --help') {|p|}
+      opts.should be_valid
+      opts.remainder.should include('--help')
+    end
+
+    it "should parse args before --" do
+      opts = Clip('-v -- other stuff') do |p|
+        p.flag 'v', 'verbose'
+      end
+      opts.should be_valid
+      opts.should be_verbose
+      opts.remainder.should include('other', 'stuff')
+    end
+  end
 end

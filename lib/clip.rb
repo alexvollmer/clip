@@ -135,14 +135,18 @@ module Clip
       @valid = true
       args = args.split(/\s+/) unless args.kind_of?(Array)
       consumed = []
-      if args.member?("--help")
-        puts help
-        exit 0
-      end
       option = nil
     
       args.each do |token|
         case token
+        when /--help/
+          puts help
+          exit 0
+
+        when /\A--\z/
+          consumed << token
+          break
+
         when /^-(-)?\w/
           consumed << token
           param = token.sub(/^-(-)?/, '').sub('-', '_').to_sym
