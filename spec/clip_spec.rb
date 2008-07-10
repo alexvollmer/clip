@@ -224,6 +224,11 @@ describe Clip do
       opts.should be_verbose
       opts.should_not be_debug
     end
+
+    it "Should handle quoted strings correctly" do
+      opts = Clip(%Q|-- "param 1" 'param 2'|) {|p|}
+      opts.remainder.should include('param 1', 'param 2')
+    end
   end
 
   describe "Declaring bad options and flags" do

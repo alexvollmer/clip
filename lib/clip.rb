@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'shellwords'
+
 ##
 # Parse arguments (defaults to <tt>ARGV</tt>) with the Clip::Parser
 # configured in the given block. This is the main method you
@@ -133,7 +135,7 @@ module Clip
     # you can get them from the <tt>Hash</tt> returned by the +errors+ method.
     def parse(args)
       @valid = true
-      args = args.split(/\s+/) unless args.kind_of?(Array)
+      args = Shellwords::shellwords(args) unless args.kind_of?(Array)
       consumed = []
       option = nil
     
