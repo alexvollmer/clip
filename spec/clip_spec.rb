@@ -54,6 +54,9 @@ describe Clip do
       p.optional 'p', 'port', :desc => 'The port number', :default => 8080
       p.required 'f', 'files', :desc => 'Files to upload', :multi => true
       p.optional 'e', 'exclude_from', :desc => 'Directories to exclude'
+      p.optional 'x', 'exclude_from_all', :desc => 'Directories to exclude'
+      p.optional 'd', 'allow-dashes', :desc => 'Dashes allowed in definition'
+      p.optional 'z', 'allow-dashes-all', :desc => 'Dashes allowed in definition'
     end
   end
 
@@ -69,6 +72,8 @@ describe Clip do
       parser.should respond_to(:files=)
       parser.should respond_to(:verbose?)
       parser.should respond_to(:flag_verbose)
+      parser.should respond_to(:allow_dashes)
+      parser.should respond_to(:allow_dashes_all)
     end
 
     it "should set fields for flags to 'true'" do
@@ -89,6 +94,13 @@ describe Clip do
     it "should map flags with '-' to methods with '_'" do
       parser = parse('--exclude-from /Users --files foo')
       parser.exclude_from.should eql("/Users")
+      parser.should be_valid
+      parser.should_not have_errors
+    end
+
+    it "should map flags with multiple '-' to methods with '_'" do
+      parser = parse('--exclude-from-all /Users --files foo')
+      parser.exclude_from_all.should eql("/Users")
       parser.should be_valid
       parser.should_not have_errors
     end

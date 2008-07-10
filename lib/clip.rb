@@ -56,7 +56,7 @@ module Clip
     # separate tokens.
     def optional(short, long, options={}, &block)
       short = short.to_sym
-      long = long.to_sym
+      long = long.gsub('-', '_').to_sym
       check_args(short, long)
 
       var_name = "@#{long}".to_sym
@@ -103,7 +103,7 @@ module Clip
     # * <tt>desc</tt>: Descriptive text for the flag
     def flag(short, long, options={})
       short = short.to_sym
-      long = long.to_sym
+      long = long.gsub('-', '_').to_sym
 
       check_args(short, long)
 
@@ -149,7 +149,7 @@ module Clip
 
         when /^-(-)?\w/
           consumed << token
-          param = token.sub(/^-(-)?/, '').sub('-', '_').to_sym
+          param = token.sub(/^-(-)?/, '').gsub('-', '_').to_sym
           option = options[param]
           unless option
             @errors[param] = "Unrecognized parameter"
