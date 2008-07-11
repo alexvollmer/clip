@@ -241,6 +241,26 @@ describe Clip do
       end.should raise_error(Clip::IllegalConfiguration)
     end
 
+    it "should reject '-' as a short option" do
+      misconfig_parser { |c| c.flag '-', 'foo' }
+    end
+
+    it "should reject long parameters that do not start with a word character" do
+      misconfig_parser { |c| c.optional 'o', '-foo' }
+      misconfig_parser { |c| c.optional 'o', '-' }
+    end
+
+    it "should reject options with non-word characters '-' ok" do
+      misconfig_parser { |c| c.flag '#', 'count' }
+      misconfig_parser { |c| c.flag 'c', 'bang!' }
+      misconfig_parser { |c| c.optional '#', 'count' }
+      misconfig_parser { |c| c.optional 'c', 'bang!' }
+    end
+
+    it "should reject short params that aren't single characters" do
+      misconfig_parser { |c| c.optional 'foo', 'foo' }
+    end
+
     it "should reject :help as a flag name" do
       misconfig_parser { |c| c.flag 'x', 'help' }
     end

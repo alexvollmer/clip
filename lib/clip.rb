@@ -57,9 +57,10 @@ module Clip
     # comma-separated value can be specified which will then be broken up into
     # separate tokens.
     def optional(short, long, options={}, &block)
+      check_args(short, long)
+
       short = short.to_sym
       long = long.gsub('-', '_').to_sym
-      check_args(short, long)
 
       var_name = "@#{long}".to_sym
       if block
@@ -104,11 +105,10 @@ module Clip
     # Valid options are:
     # * <tt>desc</tt>: Descriptive text for the flag
     def flag(short, long, options={})
-      short = short.to_sym
-      long = long.gsub('-', '_').to_sym
-
       check_args(short, long)
 
+      short = short.to_sym
+      long = long.gsub('-', '_').to_sym
       eval <<-EOF
         def flag_#{long}
           @#{long} = true
@@ -245,6 +245,18 @@ module Clip
 
     private 
     def check_args(short, long)
+      if short.size != 1
+        raise IllegalConfiguration.new("Short options must be a single character.")
+      end
+
+      if short !~ /[\w]+/
+        raise IllegalConfiguration.new("Illegal option: #{short}.  Option names can only use [a-zA-Z_-]")
+      end
+
+      if long !~ /\A\w[\w-]+\z/
+        raise IllegalConfiguration.new("Illegal option: #{long}'.  Parameter names can only use [a-zA-Z_-]")
+      end
+
       short = short.to_sym
       long = long.to_sym
 
