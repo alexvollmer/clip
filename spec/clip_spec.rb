@@ -226,8 +226,8 @@ describe Clip do
     end
 
     it "Should handle quoted strings correctly" do
-      opts = Clip(%Q|-- "param 1" 'param 2'|) {|p|}
-      opts.remainder.should include('param 1', 'param 2')
+      opts = Clip(%q(-- "param 1" 'param 2' param\ 3)) {|p|}
+      opts.remainder.should include('param 1', 'param 2', 'param 3')
     end
   end
 
