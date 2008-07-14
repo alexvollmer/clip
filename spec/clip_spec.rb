@@ -57,7 +57,7 @@ describe Clip do
     end
   end
 
-  describe "When long command-line parameters are parsed" do  
+  describe "When long command-line parameters are parsed" do
 
     it "should create accessor methods for declarations" do
       parser = parse('')
@@ -77,7 +77,7 @@ describe Clip do
       parser.should be_valid
       parser.should_not have_errors
     end
-  
+
     it "should set fields for flags with the given values" do
       parser = parse('--server localhost --port 8080 --files foo')
       parser.server.should eql("localhost")
@@ -101,14 +101,14 @@ describe Clip do
   end
 
   describe "When short (single-letter) command-line parse are parsed" do
-  
+
     it "should set flags to true" do
       parser = parse("-v --files foo")
       parser.should be_verbose
       parser.should_not have_errors
       parser.should be_valid
     end
-  
+
     it "should set fields for short options" do
       parser = parse("-s localhost -p 8080 --files foo")
       parser.should_not have_errors
@@ -120,7 +120,7 @@ describe Clip do
   end
 
   describe "When parameters are marked as required" do
-  
+
     it "should be invalid when there are missing arguments" do
       parser = parse('--server localhost')
       parser.should_not be_valid
@@ -129,7 +129,7 @@ describe Clip do
   end
 
   describe "When parameters are marked with defaults" do
-  
+
     it "should provide default parameter values when none are parsed" do
       parser = parse('--files foo')
       parser.should be_valid
@@ -328,14 +328,14 @@ describe Clip do
           v.to_i
         end
       end
-      
+
       opts.value.should == 123
     end
   end
 
   describe "when parsing ARGV as a hash" do
     setup { Clip.reset_hash! }
-    
+
     it "should make sense of '-c my_config.yml'" do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
     end
@@ -354,7 +354,7 @@ describe Clip do
       Clip.hash(['-c', 'config.yml', '--mode', 'optimistic']).
         should == { 'c' => 'config.yml', 'mode' => 'optimistic' }
     end
-    
+
     it "should return an empty hash for empty ARGV" do
       Clip.hash([]).should == {}
     end

@@ -71,7 +71,7 @@ module Clip
       end
 
       self.class.send(:define_method, long.to_sym) do
-        instance_variable_get(var_name)        
+        instance_variable_get(var_name)
       end
 
       self.options[long] = Option.new(short, long, options)
@@ -140,7 +140,7 @@ module Clip
         exit 0
       end
       option = nil
-    
+
       args.each do |token|
         case token
         when /^-(-)?\w/
@@ -237,7 +237,7 @@ module Clip
       (@order ||= [])
     end
 
-    private 
+    private
     def check_args(short, long)
       short = short.to_sym
       long = long.to_sym
@@ -293,7 +293,7 @@ module Clip
     def multi?
       @multi == true
     end
-  
+
     def usage
       out = sprintf('-%-2s --%-10s %s',
                     @short,
@@ -306,7 +306,7 @@ module Clip
   end
 
   class Flag # :nodoc:
-    
+
     attr_accessor :long, :short, :description
 
     ##
@@ -328,7 +328,7 @@ module Clip
     def has_default?
       false
     end
-  
+
     def usage
       sprintf('-%-2s --%-10s %s', @short, @long, @description)
     end
