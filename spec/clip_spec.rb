@@ -344,6 +344,16 @@ describe Clip do
       
       opts.value.should == 123
     end
+
+    it "should trap exceptions from block and report error" do
+      opts = Clip("-v 123") do |c|
+        c.req('v', 'value') {|v| raise("a good error message") }
+      end
+
+      opts.should_not be_valid
+      opts.should have_errors
+      opts.should have_errors_on(:value)
+    end
   end
 
   describe "when parsing ARGV as a hash" do

@@ -63,13 +63,13 @@ module Clip
       long = long.gsub('-', '_').to_sym
 
       var_name = "@#{long}".to_sym
-      if block
-        self.class.send(:define_method, "#{long}=".to_sym) do |v|
-          instance_variable_set(var_name, block.call(v))
-        end
-      else
-        self.class.send(:define_method, "#{long}=".to_sym) do |v|
+      self.class.send(:define_method, "#{long}=".to_sym) do |v|
+        begin
+          v = yield(v) if block_given?
           instance_variable_set(var_name, v)
+        rescue StandardError => e
+          @valid = false
+          @errors[long] = e.message
         end
       end
 
