@@ -218,8 +218,11 @@ describe Clip do
       opts.should be_verbose
       opts.should_not be_debug
     end
+  end
+  describe "Remaining arguments for Clip.hash" do
+    setup { Clip.reset_hash! }
 
-    it "should populate when Clip.hash is used" do
+    it "should be populated" do
       Clip.hash(['captain', 'lieutenant', '-c', 'jorge']).remainder.
         should == ['captain', 'lieutenant']
     end
@@ -340,9 +343,9 @@ describe Clip do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
     end
 
-    it "should only use pairs of dash + value args" do
+    it "should treat flag-style arguments as booleans" do
       Clip.hash(['-c', 'config.yml',
-                 '-d']).should == { 'c' => 'config.yml' }
+                 '-d']).should == { 'c' => 'config.yml', 'd' => true }
     end
 
     it "should ignore leading/trailing non-dashed arguments" do

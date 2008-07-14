@@ -13,7 +13,7 @@ def Clip(args=ARGV)
 end
 
 module Clip
-  VERSION = "0.0.6"
+  VERSION = "0.0.7"
 
   ##
   # Indicates that the parser was incorrectly configured in the
@@ -74,8 +74,9 @@ module Clip
         instance_variable_get(var_name)
       end
 
-      self.options[long] = Option.new(short, long, options)
-      self.options[short] = self.options[long]
+      self.options[short] = self.options[long] =
+        Option.new(short, long, options)
+
       self.order << self.options[long]
     end
 
@@ -142,12 +143,11 @@ module Clip
       option = nil
 
       args.each do |token|
-        case token
-        when /^-(-)?\w/
+        if token =~ /^-(-)?\w/
           consumed << token
           param = token.sub(/^-(-)?/, '').sub('-', '_').to_sym
           option = options[param]
-          unless option
+          if option.nil?
             @errors[param] = "Unrecognized parameter"
             @valid = false
             next
@@ -346,22 +346,30 @@ module Clip
   #  my_clip_script com -c config.yml -d # Clip.hash == { 'c' => 'config.yml' }
   #  my_clip_script -c config.yml --mode optimistic
   #  # Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
+  #
+  # The returned hash also has a +remainder+ method that contains
+  # unparsed values.
+  #
   def self.hash(argv = ARGV.dup, keys = [])
+    return @hash if @hash # used the cached value if available
+
     opts = Clip(argv) do |clip|
-      argv.select{ |a| a =~ HASHER_REGEX }.each do |a|
-        a.gsub!(HASHER_REGEX, '\\1')
-        clip.optional a, a
-        keys << a
+      keys = argv.select{ |a| a =~ HASHER_REGEX }.map do |a|
+        a = a.sub(HASHER_REGEX, '\\1')
+        clip.optional(a, a); a
       end
     end
 
-    hash = keys.inject({}) { |hash, key| hash.merge(key => opts.send(key)) }
-    hash.remainder = opts.remainder
+    # The "|| true" on the end is for when no value is found for a
+    # key; it's assumed that a flag was meant instead of an optional
+    # argument, so it's set to true. A bit weird-looking, but more useful.
+    @hash = keys.inject({}) { |h, key| h.merge(key => opts.send(key) || true) }
+    @hash.remainder = opts.remainder
 
-    return hash
+    return @hash
   end
 
   ##
   # Clear the cached hash value. Probably only useful for tests, but whatever.
-  def Clip.reset_hash!; @hash = nil end
+  def self.reset_hash!; @hash = nil end
 end

@@ -39,4 +39,10 @@ task :sync_there do
       #{HERE}/ #{THERE}})
 end
 
+desc "Code statistics"
+task :stats do
+  require 'code_statistics'
+  CodeStatistics.new(['lib'], ['spec']).to_s
+end
+
 task :default => :spec
