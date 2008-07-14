@@ -334,9 +334,6 @@ module Clip
     end
   end
 
-  # TODO: find a better way to do this
-  Hash.send :attr_accessor, :remainder
-
   HASHER_REGEX = /^--?(\w+)/
   ##
   # Turns ARGV into a hash.
@@ -364,7 +361,11 @@ module Clip
     # key; it's assumed that a flag was meant instead of an optional
     # argument, so it's set to true. A bit weird-looking, but more useful.
     @hash = keys.inject({}) { |h, key| h.merge(key => opts.send(key) || true) }
-    @hash.remainder = opts.remainder
+
+    # module_eval is necessary to define a singleton method using a closure =\
+    (class << @hash; self; end).module_eval do
+      define_method(:remainder) { opts.remainder }
+    end
 
     return @hash
   end
