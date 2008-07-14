@@ -187,8 +187,14 @@ describe Clip do
   end
 
   describe "Remaining arguments" do
-    it "should be made available" do
+    it "should be taken following parsed arguments" do
       parser = parse('--files foo alpha bravo')
+      parser.files.should == %w[foo]
+      parser.remainder.should == %w[alpha bravo]
+    end
+
+    it "should be taken preceeding parsed arguments" do
+      parser = parse('alpha bravo --files foo')
       parser.files.should == %w[foo]
       parser.remainder.should == %w[alpha bravo]
     end
@@ -211,6 +217,24 @@ describe Clip do
       opts.remainder.should == ['foobar']
       opts.should be_verbose
       opts.should_not be_debug
+    end
+
+    it "should populate when Clip.hash is used" do
+      Clip.hash(['captain', 'lieutenant', '-c' 'jorge']).remainder.
+        should == ['captain', 'lieutenant']
+    end
+
+    it "should be empty for an empty arg list" do
+      Clip.hash([]).remainder.should be_empty
+    end
+
+    it "should be empty for a completely-parsed arg list" do
+      Clip.hash(['-c', '/etc/clip.yml']).remainder.should be_empty
+    end
+
+    it "should be the arg list for an unparsed arg list" do
+      Clip.hash(['git', 'bzr', 'hg', 'darcs', 'arch']).remainder.
+        should == ['git', 'bzr', 'hg', 'darcs', 'arch']
     end
   end
 
