@@ -1,4 +1,3 @@
-(in /Users/alexvollmer/Development/clip)
 Gem::Specification.new do |s|
   s.name = %q{clip}
   s.version = "0.0.6"
