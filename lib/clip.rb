@@ -334,7 +334,10 @@ module Clip
     end
   end
 
-  HASHER_REGEX = /^--?\w+/
+  # TODO: find a better way to do this
+  Hash.send :attr_accessor, :remainder
+
+  HASHER_REGEX = /^--?(\w+)/
   ##
   # Turns ARGV into a hash.
   #
@@ -343,14 +346,19 @@ module Clip
   #  my_clip_script com -c config.yml -d # Clip.hash == { 'c' => 'config.yml' }
   #  my_clip_script -c config.yml --mode optimistic
   #  # Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
-  def self.hash(argv = ARGV.dup, values = [])
-    @hash ||= begin
-      argv.shift until argv.first =~ HASHER_REGEX or argv.empty?
-      while argv.first =~ HASHER_REGEX and argv.size >= 2 do
-        values += [argv.shift.sub(/^--?/, ''), argv.shift]
+  def self.hash(argv = ARGV.dup, keys = [])
+    opts = Clip(argv) do |clip|
+      argv.select{ |a| a =~ HASHER_REGEX }.each do |a|
+        a.gsub!(HASHER_REGEX, '\\1')
+        clip.optional a, a
+        keys << a
       end
-      Hash[*values]
     end
+
+    hash = keys.inject({}) { |hash, key| hash.merge(key => opts.send(key)) }
+    hash.remainder = opts.remainder
+
+    return hash
   end
 
   ##

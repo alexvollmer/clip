@@ -220,7 +220,7 @@ describe Clip do
     end
 
     it "should populate when Clip.hash is used" do
-      Clip.hash(['captain', 'lieutenant', '-c' 'jorge']).remainder.
+      Clip.hash(['captain', 'lieutenant', '-c', 'jorge']).remainder.
         should == ['captain', 'lieutenant']
     end
 
