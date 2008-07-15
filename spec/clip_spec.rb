@@ -54,6 +54,9 @@ describe Clip do
       p.optional 'p', 'port', :desc => 'The port number', :default => 8080
       p.required 'f', 'files', :desc => 'Files to upload', :multi => true
       p.optional 'e', 'exclude_from', :desc => 'Directories to exclude'
+      p.optional 'x', 'exclude_from_all', :desc => 'Directories to exclude'
+      p.optional 'd', 'allow-dashes', :desc => 'Dashes allowed in definition'
+      p.optional 'z', 'allow-dashes-all', :desc => 'Dashes allowed in definition'
     end
   end
 
@@ -69,6 +72,8 @@ describe Clip do
       parser.should respond_to(:files=)
       parser.should respond_to(:verbose?)
       parser.should respond_to(:flag_verbose)
+      parser.should respond_to(:allow_dashes)
+      parser.should respond_to(:allow_dashes_all)
     end
 
     it "should set fields for flags to 'true'" do
@@ -89,6 +94,13 @@ describe Clip do
     it "should map flags with '-' to methods with '_'" do
       parser = parse('--exclude-from /Users --files foo')
       parser.exclude_from.should eql("/Users")
+      parser.should be_valid
+      parser.should_not have_errors
+    end
+
+    it "should map flags with multiple '-' to methods with '_'" do
+      parser = parse('--exclude-from-all /Users --files foo')
+      parser.exclude_from_all.should eql("/Users")
       parser.should be_valid
       parser.should_not have_errors
     end
@@ -212,6 +224,11 @@ describe Clip do
       opts.should be_verbose
       opts.should_not be_debug
     end
+
+    it "Should handle quoted strings correctly" do
+      opts = Clip(%q(-- "param 1" 'param 2' param\ 3)) {|p|}
+      opts.remainder.should include('param 1', 'param 2', 'param 3')
+    end
   end
 
   describe "Declaring bad options and flags" do
@@ -222,6 +239,26 @@ describe Clip do
           yield c
         end
       end.should raise_error(Clip::IllegalConfiguration)
+    end
+
+    it "should reject '-' as a short option" do
+      misconfig_parser { |c| c.flag '-', 'foo' }
+    end
+
+    it "should reject long parameters that do not start with a word character" do
+      misconfig_parser { |c| c.optional 'o', '-foo' }
+      misconfig_parser { |c| c.optional 'o', '-' }
+    end
+
+    it "should reject options with non-word characters '-' ok" do
+      misconfig_parser { |c| c.flag '#', 'count' }
+      misconfig_parser { |c| c.flag 'c', 'bang!' }
+      misconfig_parser { |c| c.optional '#', 'count' }
+      misconfig_parser { |c| c.optional 'c', 'bang!' }
+    end
+
+    it "should reject short params that aren't single characters" do
+      misconfig_parser { |c| c.optional 'foo', 'foo' }
     end
 
     it "should reject :help as a flag name" do
@@ -307,6 +344,16 @@ describe Clip do
       
       opts.value.should == 123
     end
+
+    it "should trap exceptions from block and report error" do
+      opts = Clip("-v 123") do |c|
+        c.req('v', 'value') {|v| raise("a good error message") }
+      end
+
+      opts.should_not be_valid
+      opts.should have_errors
+      opts.should have_errors_on(:value)
+    end
   end
 
   describe "when parsing ARGV as a hash" do
@@ -333,6 +380,29 @@ describe Clip do
     
     it "should return an empty hash for empty ARGV" do
       Clip.hash([]).should == {}
+    end
+  end
+
+  describe "stopping parsing after finding --" do
+    it "should not blow up" do
+      opts = Clip('--') {|p|}
+      opts.should be_valid
+      opts.remainder.should be_empty
+    end
+
+    it "should not parse after --" do
+      opts = Clip('-- --help') {|p|}
+      opts.should be_valid
+      opts.remainder.should include('--help')
+    end
+
+    it "should parse args before --" do
+      opts = Clip('-v -- other stuff') do |p|
+        p.flag 'v', 'verbose'
+      end
+      opts.should be_valid
+      opts.should be_verbose
+      opts.remainder.should include('other', 'stuff')
     end
   end
 end

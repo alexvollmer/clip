@@ -31,8 +31,13 @@ And it goes a little something like this...
     p.optional 'p', 'port', :desc => 'The port', :default => 8080 do |v|
       v.to_i # always deal with integers
     end
-    p.required 'f', 'files', :multi => true, :desc => 'Files to send'
-    p.flag     'v', 'verbose', :desc => 'Make it chatty'
+    p.required 'f', 'files', :multi => true, :desc => 'Files to send' do |files|
+      files.each do |f|
+        raise("unable to read file #{f}") unless File::readable? f
+        f
+      end
+    end
+    p.flag 'v', 'verbose', :desc => 'Make it chatty'
   end
 
   if options.valid?
@@ -56,7 +61,9 @@ deal with when you're parsing command-line parameters.
 You can optionally process parsed arguments by passing a block to the
 <tt>required</tt> or <tt>optional</tt> methods which will set the value of the
 option to the result of the block. The block will receive the parsed value and
-should return whatever transformed value that is appropriate to your use case.
+should return whatever transformed value that is appropriate to your use case.  If
+the passed value fails validation you can raise an error which will be reported
+correctly.
 
 Simply invoking the <tt>to_s</tt> method on a parser instance will dump both the
 correct usage and any errors encountered during parsing. No need for you to manage

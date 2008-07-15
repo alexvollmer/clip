@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'shellwords'
+
 ##
 # Parse arguments (defaults to <tt>ARGV</tt>) with the Clip::Parser
 # configured in the given block. This is the main method you
@@ -55,18 +57,19 @@ module Clip
     # comma-separated value can be specified which will then be broken up into
     # separate tokens.
     def optional(short, long, options={}, &block)
-      short = short.to_sym
-      long = long.to_sym
       check_args(short, long)
 
+      short = short.to_sym
+      long = long.gsub('-', '_').to_sym
+
       var_name = "@#{long}".to_sym
-      if block
-        self.class.send(:define_method, "#{long}=".to_sym) do |v|
-          instance_variable_set(var_name, block.call(v))
-        end
-      else
-        self.class.send(:define_method, "#{long}=".to_sym) do |v|
+      self.class.send(:define_method, "#{long}=".to_sym) do |v|
+        begin
+          v = yield(v) if block_given?
           instance_variable_set(var_name, v)
+        rescue StandardError => e
+          @valid = false
+          @errors[long] = e.message
         end
       end
 
@@ -102,11 +105,10 @@ module Clip
     # Valid options are:
     # * <tt>desc</tt>: Descriptive text for the flag
     def flag(short, long, options={})
-      short = short.to_sym
-      long = long.to_sym
-
       check_args(short, long)
 
+      short = short.to_sym
+      long = long.gsub('-', '_').to_sym
       eval <<-EOF
         def flag_#{long}
           @#{long} = true
@@ -133,19 +135,23 @@ module Clip
     # you can get them from the <tt>Hash</tt> returned by the +errors+ method.
     def parse(args)
       @valid = true
-      args = args.split(/\s+/) unless args.kind_of?(Array)
+      args = Shellwords::shellwords(args) unless args.kind_of?(Array)
       consumed = []
-      if args.member?("--help")
-        puts help
-        exit 0
-      end
       option = nil
     
       args.each do |token|
         case token
+        when /--help/
+          puts help
+          exit 0
+
+        when /\A--\z/
+          consumed << token
+          break
+
         when /^-(-)?\w/
           consumed << token
-          param = token.sub(/^-(-)?/, '').sub('-', '_').to_sym
+          param = token.sub(/^-(-)?/, '').gsub('-', '_').to_sym
           option = options[param]
           unless option
             @errors[param] = "Unrecognized parameter"
@@ -239,6 +245,18 @@ module Clip
 
     private 
     def check_args(short, long)
+      if short.size != 1
+        raise IllegalConfiguration.new("Short options must be a single character.")
+      end
+
+      if short !~ /[\w]+/
+        raise IllegalConfiguration.new("Illegal option: #{short}.  Option names can only use [a-zA-Z_-]")
+      end
+
+      if long !~ /\A\w[\w-]+\z/
+        raise IllegalConfiguration.new("Illegal option: #{long}'.  Parameter names can only use [a-zA-Z_-]")
+      end
+
       short = short.to_sym
       long = long.to_sym
 
