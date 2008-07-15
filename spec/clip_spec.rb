@@ -344,8 +344,8 @@ describe Clip do
     end
 
     it "should treat flag-style arguments as booleans" do
-      Clip.hash(['-c', 'config.yml',
-                 '-d']).should == { 'c' => 'config.yml', 'd' => true }
+      Clip.hash(['-f', '-c', 'config.yml', '-d']).
+        should == { 'c' => 'config.yml', 'd' => true, 'f' => true }
     end
 
     it "should ignore leading/trailing non-dashed arguments" do
