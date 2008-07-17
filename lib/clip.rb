@@ -82,6 +82,7 @@ module Clip
       self.options[long] = Option.new(short, long, options)
       self.options[short] = self.options[long]
       self.order << self.options[long]
+      check_longest(long)
     end
 
     alias_method :opt, :optional
@@ -124,11 +125,13 @@ module Clip
       self.options[long] = Flag.new(short, long, options)
       self.options[short] = self.options[long]
       self.order << self.options[long]
+      check_longest(long)
     end
 
     def initialize # :nodoc:
       @errors = {}
       @valid = true
+      @longest = 10
     end
 
     ##
@@ -217,7 +220,35 @@ module Clip
       end
 
       order.each do |option|
-        out << "#{option.usage}\n"
+        line = sprintf("-%-2s --%-#{@longest}s  ",
+                       option.short,
+                       option.long.to_s.gsub('_', '-'))
+
+        out << line
+        if line.length + option.description.length <= 80
+          out << option.description
+        else
+          rem = 80 - line.length
+          desc = option.description
+          out << desc[0..rem]
+          i = rem + 1
+          while i < desc.length
+            out << "\n"
+            chunk = desc[i..i+rem].strip
+            out << " " * line.length
+            out << chunk
+            i += rem + 1
+          end
+        end
+
+        if option.has_default?
+          out << " (default: #{option.default})"
+        end
+
+        if option.required?
+          out << " REQUIRED"
+        end
+        out << "\n"
       end
       out
     end
@@ -277,6 +308,11 @@ module Clip
       if self.options.has_key?(short)
         raise IllegalConfiguration.new("You already have a defined parameter/flag for the short key '#{short}")
       end
+    end
+
+    def check_longest(name)
+      l = name.to_s.length
+      @longest = l if l > @longest
     end
   end
 
@@ -347,10 +383,6 @@ module Clip
 
     def has_default?
       false
-    end
-  
-    def usage
-      sprintf('-%-2s --%-10s %s', @short, @long, @description)
     end
   end
 

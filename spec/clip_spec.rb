@@ -169,14 +169,43 @@ describe Clip do
   end
 
   describe "Help output" do
+    def opts(args=nil)
+      Clip(args) do |o|
+        o.req 's', 'server', :desc => 'The server name'
+        o.opt 'p', 'port', :desc => 'The port number', :default => 80
+        o.flag 'v', 'verbose', :desc => 'Enables verbose output'
+        yield o if block_given?
+      end
+    end
+
     it "should print out some sensible usage info for to_s" do
-      out = parse('--files foo').to_s.split("\n")
-      out[0].should match(/Usage/)
-      out[1].should match(/-v\s+--verbose\s+Provide verbose output/)
-      out[2].should match(/-s\s+--server\s+The hostname.*default.*localhost/)
-      out[3].should match(/-p\s+--port\s+The port number/)
-      out[4].should match(/-f\s+--files\s+Files to upload.*REQUIRED/)
-      out[5].should match(/-e\s+--exclude-from\s+Directories to exclude/)
+      help = opts("-s localhost").to_s.split("\n")
+      help[0].should match(/Usage/)
+      help[1].should == "-s  --server      The server name REQUIRED"
+      help[2].should == "-p  --port        The port number (default: 80)"
+      help[3].should == "-v  --verbose     Enables verbose output"
+    end
+
+    it "should expand columns to largest option name" do
+      help = opts("-s localhost") do |o|
+        o.opt 'b', 'big-honking-file-list', :desc => 'The file list'
+      end.to_s.split("\n")
+      help[0].should match(/Usage/)
+      help[1].should == "-s  --server                 The server name REQUIRED"
+      help[2].should == "-p  --port                   The port number (default: 80)"
+      help[3].should == "-v  --verbose                Enables verbose output"
+      help[4].should == "-b  --big-honking-file-list  The file list"
+    end
+
+    it "should wrap column descriptions to fit 80 columns" do
+      opts = Clip do |o|
+        o.opt 'd', 'description',
+              :desc => 'An unending stream of words that goes on for ever and ever and ever. Amen',
+              :default => 'wordy'
+      end
+      help = opts.to_s.split("\n")
+      help[1].should == "-d  --description  An unending stream of words that goes on for ever and ever and"
+      help[2].should == "                   ever. Amen (default: wordy)"
     end
 
     it "should include error messages in to_s" do
