@@ -200,12 +200,12 @@ describe Clip do
     it "should wrap column descriptions to fit 80 columns" do
       opts = Clip do |o|
         o.opt 'd', 'description',
-              :desc => 'An unending stream of words that goes on for ever and ever and ever. Amen',
+              :desc => 'An unending stream of words that goes on endlessly for an eternity until, at last, they stop.',
               :default => 'wordy'
       end
       help = opts.to_s.split("\n")
-      help[1].should == "-d  --description  An unending stream of words that goes on for ever and ever and"
-      help[2].should == "                   ever. Amen (default: wordy)"
+      help[1].should == "-d  --description  An unending stream of words that goes on endlessly for an"
+      help[2].should == "                   eternity until, at last, they stop. (default: wordy)"
     end
 
     it "should include error messages in to_s" do

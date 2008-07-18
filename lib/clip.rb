@@ -210,7 +210,8 @@ module Clip
     end
 
     ##
-    # Returns a formatted <tt>String</tt> indicating the usage of the parser
+    # Returns a formatted <tt>String</tt> indicating the usage of the parser,
+    # formatted to fit within 80 display columns.
     def help
       out = ""
       if banner
@@ -230,14 +231,17 @@ module Clip
         else
           rem = 80 - line.length
           desc = option.description
-          out << desc[0..rem]
-          i = rem + 1
+          i = 0
           while i < desc.length
-            out << "\n"
-            chunk = desc[i..i+rem].strip
-            out << " " * line.length
+            out << "\n" if i > 0
+            j = [i + rem, desc.length - 1].min
+            while desc[j..j] =~ /[\w\d]/
+              j -= 1
+            end
+            chunk = desc[i..j].strip
+            out << " " * line.length if i > 0
             out << chunk
-            i += rem + 1
+            i = j + 1
           end
         end
 
