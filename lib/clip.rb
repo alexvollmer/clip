@@ -146,7 +146,7 @@ module Clip
     
       args.each do |token|
         case token
-        when /--help/
+        when '--help', '-?'
           puts help
           exit 0
 
@@ -301,8 +301,8 @@ module Clip
         raise IllegalConfiguration.new("You cannot override the built-in 'help' parameter")
       end
 
-      if short == :h
-        raise IllegalConfiguration.new("You cannot override the built-in 'h' parameter")
+      if short == '?'.to_sym
+        raise IllegalConfiguration.new("You cannot override the built-in '?' parameter")
       end
 
       if self.options.has_key?(long)

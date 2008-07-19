@@ -298,12 +298,12 @@ describe Clip do
       misconfig_parser { |c| c.optional 'x', 'help' }
     end
 
-    it "should reject 'h' as a short flag name" do
-      misconfig_parser { |c| c.flag 'h', 'foo' }
+    it "should reject '?' as a short flag name" do
+      misconfig_parser { |c| c.flag '?', 'foo' }
     end
 
-    it "should reject 'h' as a short parameter name" do
-      misconfig_parser { |c| c.optional 'h', 'foo' }
+    it "should reject '?' as a short parameter name" do
+      misconfig_parser { |c| c.optional '?', 'foo' }
     end
 
     it "should reject redefining an existing long name for two options" do
