@@ -225,6 +225,16 @@ describe Clip do
       out = opts.to_s.split("\n")
       out[0].should == 'USAGE foo bar baz'
     end
+
+    it "should support overriding help flags" do
+      opts = Clip('-?') do |p|
+        p.opt 'h', 'host', :desc => 'The hostname'
+        p.help_with '?'
+      end
+      help = opts.to_s.split("\n")
+      help[0].should match(/Usage/)
+      help[1].should match(/-h\s+--host\s+The hostname/)
+    end
   end
 
   describe "Remaining arguments" do

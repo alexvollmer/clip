@@ -15,7 +15,7 @@ def Clip(args=ARGV)
 end
 
 module Clip
-  VERSION = "0.0.6"
+  VERSION = "0.1.0"
 
   ##
   # Indicates that the parser was incorrectly configured in the
@@ -34,6 +34,16 @@ module Clip
     # display the usage message. If not set, the default will be used.
     # If the value is set this completely replaces the default
     attr_accessor :banner
+
+    ##
+    # Override the flag to trigger help usage. By default the short
+    # flag '-h' and long flag '--help' will trigger displaying usage.
+    # If you need to override this, particularly in the case of '-h',
+    # call this method
+    def help_with(short, long="--help")
+      @help_short = short
+      @help_long = long
+    end
 
     ##
     # Declare an optional parameter for your parser. This creates an accessor
@@ -132,6 +142,8 @@ module Clip
       @errors = {}
       @valid = true
       @longest = 10
+      @help_long = "--help"
+      @help_short = "-h"
     end
 
     ##
@@ -146,7 +158,7 @@ module Clip
     
       args.each do |token|
         case token
-        when '--help', '-?'
+        when @help_long, @help_short
           puts help
           exit 0
 
