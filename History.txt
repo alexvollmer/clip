@@ -1,3 +1,7 @@
+=== 0.0.7 / 2008-07-14
+
+* remainder now works with Clip.hash method.
+
 === 0.0.6 / 2008-07-10
 
 * Fixed a bug with getting the 'remainder' when only flags are declared.

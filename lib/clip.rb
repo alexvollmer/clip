@@ -89,8 +89,9 @@ module Clip
         end
       end
 
-      self.options[long] = Option.new(short, long, options)
-      self.options[short] = self.options[long]
+      self.options[short] = self.options[long] =
+        Option.new(short, long, options)
+
       self.order << self.options[long]
       check_longest(long)
     end
@@ -155,7 +156,7 @@ module Clip
       args = Shellwords::shellwords(args) unless args.kind_of?(Array)
       consumed = []
       option = nil
-    
+
       args.each do |token|
         case token
         when @help_long, @help_short
@@ -170,7 +171,7 @@ module Clip
           consumed << token
           param = token.sub(/^-(-)?/, '').gsub('-', '_').to_sym
           option = options[param]
-          unless option
+          if option.nil?
             @errors[param] = "Unrecognized parameter"
             @valid = false
             next
@@ -292,7 +293,7 @@ module Clip
       (@order ||= [])
     end
 
-    private 
+    private
     def check_args(short, long)
       if short.size != 1
         raise IllegalConfiguration.new("Short options must be a single character.")
@@ -302,7 +303,7 @@ module Clip
         raise IllegalConfiguration.new("Illegal option: #{short}.  Option names can only use [a-zA-Z_-]")
       end
 
-      if long !~ /\A\w[\w-]+\z/
+      if long !~ /\A\w[\w-]*\z/
         raise IllegalConfiguration.new("Illegal option: #{long}'.  Parameter names can only use [a-zA-Z_-]")
       end
 
@@ -365,7 +366,7 @@ module Clip
     def multi?
       @multi == true
     end
-  
+
     def usage
       out = sprintf('-%-2s --%-10s %s',
                     @short,
@@ -378,7 +379,7 @@ module Clip
   end
 
   class Flag # :nodoc:
-    
+
     attr_accessor :long, :short, :description
 
     ##
@@ -402,7 +403,7 @@ module Clip
     end
   end
 
-  HASHER_REGEX = /^--?\w+/
+  HASHER_REGEX = /^--?(\w+)/
   ##
   # Turns ARGV into a hash.
   #
@@ -411,17 +412,34 @@ module Clip
   #  my_clip_script com -c config.yml -d # Clip.hash == { 'c' => 'config.yml' }
   #  my_clip_script -c config.yml --mode optimistic
   #  # Clip.hash == { 'c' => 'config.yml', 'mode' => 'optimistic' }
-  def self.hash(argv = ARGV.dup, values = [])
-    @hash ||= begin
-      argv.shift until argv.first =~ HASHER_REGEX or argv.empty?
-      while argv.first =~ HASHER_REGEX and argv.size >= 2 do
-        values += [argv.shift.sub(/^--?/, ''), argv.shift]
+  #
+  # The returned hash also has a +remainder+ method that contains
+  # unparsed values.
+  #
+  def self.hash(argv = ARGV.dup, keys = [])
+    return @hash if @hash # used the cached value if available
+
+    opts = Clip(argv) do |clip|
+      keys = argv.select{ |a| a =~ HASHER_REGEX }.map do |a|
+        a = a.sub(HASHER_REGEX, '\\1')
+        clip.optional(a[0,1], a); a
       end
-      Hash[*values]
     end
+
+    # The "|| true" on the end is for when no value is found for a
+    # key; it's assumed that a flag was meant instead of an optional
+    # argument, so it's set to true. A bit weird-looking, but more useful.
+    @hash = keys.inject({}) { |h, key| h.merge(key => opts.send(key) || true) }
+
+    # module_eval is necessary to define a singleton method using a closure =\
+    (class << @hash; self; end).module_eval do
+      define_method(:remainder) { opts.remainder }
+    end
+
+    return @hash
   end
 
   ##
   # Clear the cached hash value. Probably only useful for tests, but whatever.
-  def Clip.reset_hash!; @hash = nil end
+  def self.reset_hash!; @hash = nil end
 end

@@ -60,7 +60,7 @@ describe Clip do
     end
   end
 
-  describe "When long command-line parameters are parsed" do  
+  describe "When long command-line parameters are parsed" do
 
     it "should create accessor methods for declarations" do
       parser = parse('')
@@ -82,7 +82,7 @@ describe Clip do
       parser.should be_valid
       parser.should_not have_errors
     end
-  
+
     it "should set fields for flags with the given values" do
       parser = parse('--server localhost --port 8080 --files foo')
       parser.server.should eql("localhost")
@@ -113,14 +113,14 @@ describe Clip do
   end
 
   describe "When short (single-letter) command-line parse are parsed" do
-  
+
     it "should set flags to true" do
       parser = parse("-v --files foo")
       parser.should be_verbose
       parser.should_not have_errors
       parser.should be_valid
     end
-  
+
     it "should set fields for short options" do
       parser = parse("-s localhost -p 8080 --files foo")
       parser.should_not have_errors
@@ -132,7 +132,7 @@ describe Clip do
   end
 
   describe "When parameters are marked as required" do
-  
+
     it "should be invalid when there are missing arguments" do
       parser = parse('--server localhost')
       parser.should_not be_valid
@@ -141,7 +141,7 @@ describe Clip do
   end
 
   describe "When parameters are marked with defaults" do
-  
+
     it "should provide default parameter values when none are parsed" do
       parser = parse('--files foo')
       parser.should be_valid
@@ -238,8 +238,14 @@ describe Clip do
   end
 
   describe "Remaining arguments" do
-    it "should be made available" do
+    it "should be taken following parsed arguments" do
       parser = parse('--files foo alpha bravo')
+      parser.files.should == %w[foo]
+      parser.remainder.should == %w[alpha bravo]
+    end
+
+    it "should be taken preceeding parsed arguments" do
+      parser = parse('alpha bravo --files foo')
       parser.files.should == %w[foo]
       parser.remainder.should == %w[alpha bravo]
     end
@@ -267,6 +273,27 @@ describe Clip do
     it "Should handle quoted strings correctly" do
       opts = Clip(%q(-- "param 1" 'param 2' param\ 3)) {|p|}
       opts.remainder.should include('param 1', 'param 2', 'param 3')
+    end
+  end
+  describe "Remaining arguments for Clip.hash" do
+    setup { Clip.reset_hash! }
+
+    it "should be populated" do
+      Clip.hash(['captain', 'lieutenant', '-c', 'jorge']).remainder.
+        should == ['captain', 'lieutenant']
+    end
+
+    it "should be empty for an empty arg list" do
+      Clip.hash([]).remainder.should be_empty
+    end
+
+    it "should be empty for a completely-parsed arg list" do
+      Clip.hash(['-c', '/etc/clip.yml']).remainder.should be_empty
+    end
+
+    it "should be the arg list for an unparsed arg list" do
+      Clip.hash(['git', 'bzr', 'hg', 'darcs', 'arch']).remainder.
+        should == ['git', 'bzr', 'hg', 'darcs', 'arch']
     end
   end
 
@@ -380,7 +407,7 @@ describe Clip do
           v.to_i
         end
       end
-      
+
       opts.value.should == 123
     end
 
@@ -397,14 +424,14 @@ describe Clip do
 
   describe "when parsing ARGV as a hash" do
     setup { Clip.reset_hash! }
-    
+
     it "should make sense of '-c my_config.yml'" do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
     end
 
-    it "should only use pairs of dash + value args" do
-      Clip.hash(['-c', 'config.yml',
-                 '-d']).should == { 'c' => 'config.yml' }
+    it "should treat flag-style arguments as booleans" do
+      Clip.hash(['-f', '-c', 'config.yml', '-d']).
+        should == { 'c' => 'config.yml', 'd' => true, 'f' => true }
     end
 
     it "should ignore leading/trailing non-dashed arguments" do
@@ -416,7 +443,7 @@ describe Clip do
       Clip.hash(['-c', 'config.yml', '--mode', 'optimistic']).
         should == { 'c' => 'config.yml', 'mode' => 'optimistic' }
     end
-    
+
     it "should return an empty hash for empty ARGV" do
       Clip.hash([]).should == {}
     end
