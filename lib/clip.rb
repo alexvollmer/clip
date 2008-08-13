@@ -122,15 +122,15 @@ module Clip
 
       short = short.to_sym
       long = long.gsub('-', '_').to_sym
-      eval <<-EOF
-        def flag_#{long}
-          @#{long} = true
+      self.class.class_eval do
+        define_method("flag_#{long}") do
+          instance_variable_set("@#{long}", true)
         end
 
-        def #{long}?
-          return @#{long} || false
+        define_method("#{long}?") do
+          instance_variable_get("@#{long}")
         end
-      EOF
+      end
 
       self.options[long] = Flag.new(short, long, options)
       self.options[short] = self.options[long]
