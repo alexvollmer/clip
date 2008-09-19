@@ -83,7 +83,7 @@ describe Clip do
       parser.should_not have_errors
     end
 
-    it "should set fields for flags with the given values" do
+    it "should set fields for options with the given values" do
       parser = parse('--server localhost --port 8080 --files foo')
       parser.server.should eql("localhost")
       parser.port.should eql("8080")
@@ -91,21 +91,21 @@ describe Clip do
       parser.should_not have_errors
     end
 
-    it "should map flags with '-' to methods with '_'" do
+    it "should map options with '-' to methods with '_'" do
       parser = parse('--exclude-from /Users --files foo')
       parser.exclude_from.should eql("/Users")
       parser.should be_valid
       parser.should_not have_errors
     end
 
-    it "should map flags with multiple '-' to methods with '_'" do
+    it "should map options with multiple '-' to methods with '_'" do
       parser = parse('--exclude-from-all /Users --files foo')
       parser.exclude_from_all.should eql("/Users")
       parser.should be_valid
       parser.should_not have_errors
     end
 
-    it "should be invalid for unknown flags" do
+    it "should be invalid for unknown options" do
       parser = parse('--non-existent')
       parser.should_not be_valid
       parser.should have_errors_on(:non_existent)
@@ -131,7 +131,7 @@ describe Clip do
     end
   end
 
-  describe "When parameters are marked as required" do
+  describe "When options are marked as required" do
 
     it "should be invalid when there are missing arguments" do
       parser = parse('--server localhost')
@@ -140,9 +140,9 @@ describe Clip do
     end
   end
 
-  describe "When parameters are marked with defaults" do
+  describe "When options are marked with defaults" do
 
-    it "should provide default parameter values when none are parsed" do
+    it "should provide default option values when none are parsed" do
       parser = parse('--files foo')
       parser.should be_valid
       parser.should_not have_errors
@@ -151,9 +151,9 @@ describe Clip do
     end
   end
 
-  describe "Multi-valued parameters" do
+  describe "Multi-valued options" do
 
-    it "should handle multiple value for the same parameter" do
+    it "should handle multiple value for the same option" do
       parser = parse("--files foo --files bar --files baz")
       parser.should be_valid
       parser.should_not have_errors
