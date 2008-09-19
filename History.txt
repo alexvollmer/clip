@@ -1,3 +1,10 @@
+=== 1.0.0 / 2008-09-19
+
+* Added support for mapping dashes to underscores for flags
+* Define Clip.hash.remainder as a singleton method instead of reopening Hash
+* remainder works with Clip.hash now
+* Reimplemented Clip.hash to use a parser.
+
 === 0.0.7 / 2008-07-14
 
 * remainder now works with Clip.hash method.
