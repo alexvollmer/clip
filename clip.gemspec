@@ -8,10 +8,10 @@ Gem::Specification.new do |s|
   s.description = %q{You like command-line parsing, but you hate all of the bloat. Why should you have to create a Hash, then create a parser, fill the Hash out then throw the parser away (unless you want to print out a usage message) and deal with a Hash? Why, for Pete's sake, should the parser and the parsed values be handled by two different objects?}
   s.email = ["alex.vollmer@gmail.com"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt"]
-  s.files = ["History.txt", "Manifest.txt", "README.rdoc", "Rakefile", "clip.gemspec", "lib/clip.rb", "spec/clip_spec.rb"]
+  s.files = ["History.txt", "Manifest.txt", "README.txt", "Rakefile", "clip.gemspec", "lib/clip.rb", "spec/clip_spec.rb"]
   s.has_rdoc = true
   s.homepage = %q{http://clip.rubyforge.org}
-  s.rdoc_options = ["--main", "README.rdoc"]
+  s.rdoc_options = ["--main", "README.txt"]
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{clip}
   s.rubygems_version = %q{1.2.0}

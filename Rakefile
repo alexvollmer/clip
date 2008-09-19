@@ -7,7 +7,7 @@ require './lib/clip.rb'
 Hoe.new('clip', Clip::VERSION) do |p|
   p.name = 'clip'
   p.developer('Alex Vollmer', 'alex.vollmer@gmail.com')
-  p.description = p.paragraphs_of('README.rdoc', 5..5).join("\n\n")
+  p.description = p.paragraphs_of('README.txt', 5..5).join("\n\n")
   p.summary = 'Command-line parsing made short and sweet'
   p.url = 'http://clip.rubyforge.org'
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
