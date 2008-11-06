@@ -1,6 +1,7 @@
 require "#{File.dirname(__FILE__)}/../lib/clip"
 require "rubygems"
 require "spec"
+require "timeout"
 
 class HaveErrors
 
@@ -60,7 +61,7 @@ describe Clip do
     end
   end
 
-  describe "When long command-line parameters are parsed" do  
+  describe "When long command-line parameters are parsed" do
 
     it "should create accessor methods for declarations" do
       parser = parse('')
@@ -82,7 +83,7 @@ describe Clip do
       parser.should be_valid
       parser.should_not have_errors
     end
-  
+
     it "should set fields for flags with the given values" do
       parser = parse('--server localhost --port 8080 --files foo')
       parser.server.should eql("localhost")
@@ -113,14 +114,14 @@ describe Clip do
   end
 
   describe "When short (single-letter) command-line parse are parsed" do
-  
+
     it "should set flags to true" do
       parser = parse("-v --files foo")
       parser.should be_verbose
       parser.should_not have_errors
       parser.should be_valid
     end
-  
+
     it "should set fields for short options" do
       parser = parse("-s localhost -p 8080 --files foo")
       parser.should_not have_errors
@@ -132,7 +133,7 @@ describe Clip do
   end
 
   describe "When parameters are marked as required" do
-  
+
     it "should be invalid when there are missing arguments" do
       parser = parse('--server localhost')
       parser.should_not be_valid
@@ -141,7 +142,7 @@ describe Clip do
   end
 
   describe "When parameters are marked with defaults" do
-  
+
     it "should provide default parameter values when none are parsed" do
       parser = parse('--files foo')
       parser.should be_valid
@@ -224,6 +225,23 @@ describe Clip do
 
       out = opts.to_s.split("\n")
       out[0].should == 'USAGE foo bar baz'
+    end
+
+    it "should handle Travis' degenerate infinite-loop case" do
+     opts = Clip('-c') do |c|
+        c.flag('c',
+               'no-close-session',
+               :desc => 'Close the session after successful import?')
+        c.flag('l',
+               'live-site',
+               :desc => "Query live wikipedia site for wiki text instead of DB session")
+      end
+
+      help = Timeout.timeout(2) { opts.to_s.split("\n") }
+      help[0].should match(/Usage/)
+      help[1].should == "-c  --no-close-session  Close the session after successful import?"
+      help[2].should == "-l  --live-site         Query live wikipedia site for wiki text instead of DB"
+      help[3].should == "                        session"
     end
   end
 
@@ -370,7 +388,7 @@ describe Clip do
           v.to_i
         end
       end
-      
+
       opts.value.should == 123
     end
 
@@ -387,7 +405,7 @@ describe Clip do
 
   describe "when parsing ARGV as a hash" do
     setup { Clip.reset_hash! }
-    
+
     it "should make sense of '-c my_config.yml'" do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
     end
@@ -406,7 +424,7 @@ describe Clip do
       Clip.hash(['-c', 'config.yml', '--mode', 'optimistic']).
         should == { 'c' => 'config.yml', 'mode' => 'optimistic' }
     end
-    
+
     it "should return an empty hash for empty ARGV" do
       Clip.hash([]).should == {}
     end

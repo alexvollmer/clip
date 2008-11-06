@@ -143,7 +143,7 @@ module Clip
       args = Shellwords::shellwords(args) unless args.kind_of?(Array)
       consumed = []
       option = nil
-    
+
       args.each do |token|
         case token
         when '--help', '-?'
@@ -234,7 +234,7 @@ module Clip
           i = 0
           while i < desc.length
             out << "\n" if i > 0
-            j = [i + rem, desc.length - 1].min
+            j = [i + rem, desc.length].min
             while desc[j..j] =~ /[\w\d]/
               j -= 1
             end
@@ -280,7 +280,7 @@ module Clip
       (@order ||= [])
     end
 
-    private 
+    private
     def check_args(short, long)
       if short.size != 1
         raise IllegalConfiguration.new("Short options must be a single character.")
@@ -353,7 +353,7 @@ module Clip
     def multi?
       @multi == true
     end
-  
+
     def usage
       out = sprintf('-%-2s --%-10s %s',
                     @short,
@@ -366,7 +366,7 @@ module Clip
   end
 
   class Flag # :nodoc:
-    
+
     attr_accessor :long, :short, :description
 
     ##
