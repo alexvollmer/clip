@@ -56,8 +56,8 @@ describe Clip do
       p.required 'f', 'files', :desc => 'Files to upload', :multi => true
       p.optional 'e', 'exclude_from', :desc => 'Directories to exclude'
       p.optional 'x', 'exclude_from_all', :desc => 'Directories to exclude'
-      p.optional 'd', 'allow-dashes', :desc => 'Dashes allowed in definition'
-      p.optional 'z', 'allow-dashes-all', :desc => 'Dashes allowed in definition'
+      p.flag 'd', 'allow-dashes', :desc => 'Dashes allowed in definition'
+      p.flag 'z', 'allow-dashes-all', :desc => 'Dashes allowed in definition'
     end
   end
 
@@ -73,8 +73,8 @@ describe Clip do
       parser.should respond_to(:files=)
       parser.should respond_to(:verbose?)
       parser.should respond_to(:flag_verbose)
-      parser.should respond_to(:allow_dashes)
-      parser.should respond_to(:allow_dashes_all)
+      parser.should respond_to(:allow_dashes?)
+      parser.should respond_to(:allow_dashes_all?)
     end
 
     it "should set fields for flags to 'true'" do
@@ -92,21 +92,27 @@ describe Clip do
       parser.should_not have_errors
     end
 
-    it "should map flags with '-' to methods with '_'" do
+    it "should map options with '-' to methods with '_'" do
       parser = parse('--exclude-from /Users --files foo')
       parser.exclude_from.should eql("/Users")
       parser.should be_valid
       parser.should_not have_errors
     end
 
-    it "should map flags with multiple '-' to methods with '_'" do
+    it "should map flags with '-' to methods with '_'" do
+      parser = parse('--allow-dashes')
+      parser.should be_allow_dashes
+      parser.should_not be_allow_dashes_all
+    end
+
+    it "should map options with multiple '-' to methods with '_'" do
       parser = parse('--exclude-from-all /Users --files foo')
       parser.exclude_from_all.should eql("/Users")
       parser.should be_valid
       parser.should_not have_errors
     end
 
-    it "should be invalid for unknown flags" do
+    it "should be invalid for unknown options" do
       parser = parse('--non-existent')
       parser.should_not be_valid
       parser.should have_errors_on(:non_existent)
@@ -141,6 +147,7 @@ describe Clip do
     end
   end
 
+
   describe "When parameters are marked with defaults" do
 
     it "should provide default parameter values when none are parsed" do
@@ -152,9 +159,9 @@ describe Clip do
     end
   end
 
-  describe "Multi-valued parameters" do
+  describe "Multi-valued options" do
 
-    it "should handle multiple value for the same parameter" do
+    it "should handle multiple value for the same option" do
       parser = parse("--files foo --files bar --files baz")
       parser.should be_valid
       parser.should_not have_errors
@@ -243,11 +250,27 @@ describe Clip do
       help[2].should == "-l  --live-site         Query live wikipedia site for wiki text instead of DB"
       help[3].should == "                        session"
     end
+
+    it "should support overriding help flags" do
+      opts = Clip('-?') do |p|
+        p.opt 'h', 'host', :desc => 'The hostname'
+        p.help_with '?'
+      end
+      help = opts.to_s.split("\n")
+      help[0].should match(/Usage/)
+      help[1].should match(/-h\s+--host\s+The hostname/)
+    end
   end
 
   describe "Remaining arguments" do
-    it "should be made available" do
+    it "should be taken following parsed arguments" do
       parser = parse('--files foo alpha bravo')
+      parser.files.should == %w[foo]
+      parser.remainder.should == %w[alpha bravo]
+    end
+
+    it "should be taken preceeding parsed arguments" do
+      parser = parse('alpha bravo --files foo')
       parser.files.should == %w[foo]
       parser.remainder.should == %w[alpha bravo]
     end
@@ -275,6 +298,27 @@ describe Clip do
     it "Should handle quoted strings correctly" do
       opts = Clip(%q(-- "param 1" 'param 2' param\ 3)) {|p|}
       opts.remainder.should include('param 1', 'param 2', 'param 3')
+    end
+  end
+  describe "Remaining arguments for Clip.hash" do
+    setup { Clip.reset_hash! }
+
+    it "should be populated" do
+      Clip.hash(['captain', 'lieutenant', '-c', 'jorge']).remainder.
+        should == ['captain', 'lieutenant']
+    end
+
+    it "should be empty for an empty arg list" do
+      Clip.hash([]).remainder.should be_empty
+    end
+
+    it "should be empty for a completely-parsed arg list" do
+      Clip.hash(['-c', '/etc/clip.yml']).remainder.should be_empty
+    end
+
+    it "should be the arg list for an unparsed arg list" do
+      Clip.hash(['git', 'bzr', 'hg', 'darcs', 'arch']).remainder.
+        should == ['git', 'bzr', 'hg', 'darcs', 'arch']
     end
   end
 
@@ -410,9 +454,9 @@ describe Clip do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
     end
 
-    it "should only use pairs of dash + value args" do
-      Clip.hash(['-c', 'config.yml',
-                 '-d']).should == { 'c' => 'config.yml' }
+    it "should treat flag-style arguments as booleans" do
+      Clip.hash(['-f', '-c', 'config.yml', '-d']).
+        should == { 'c' => 'config.yml', 'd' => true, 'f' => true }
     end
 
     it "should ignore leading/trailing non-dashed arguments" do

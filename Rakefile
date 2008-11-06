@@ -8,7 +8,7 @@ Hoe.new('clip', Clip::VERSION) do |p|
   p.name = 'clip'
   p.developer('Alex Vollmer', 'alex.vollmer@gmail.com')
   p.description = p.paragraphs_of('README.txt', 5..5).join("\n\n")
-  p.summary = 'Command-line parsing made short and sweet' 
+  p.summary = 'Command-line parsing made short and sweet'
   p.url = 'http://clip.rubyforge.org'
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
   p.remote_rdoc_dir = ''
@@ -37,6 +37,12 @@ task :sync_there do
       --recursive \
       --delete \
       #{HERE}/ #{THERE}})
+end
+
+desc "Code statistics"
+task :stats do
+  require 'code_statistics'
+  CodeStatistics.new(['lib'], ['spec']).to_s
 end
 
 task :default => :spec
