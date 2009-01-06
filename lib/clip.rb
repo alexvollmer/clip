@@ -15,7 +15,7 @@ def Clip(args=ARGV)
 end
 
 module Clip
-  VERSION = "1.0.0"
+  VERSION = "1.0.1"
 
   ##
   # Indicates that the parser was incorrectly configured in the

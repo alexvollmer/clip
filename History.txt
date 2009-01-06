@@ -1,3 +1,7 @@
+=== 1.0.1 / 2009-01-06
+
+* Fixed a bug where generating help resulted in an infinite-loop
+
 === 1.0.0 / 2008-09-19
 
 * Added support for mapping dashes to underscores for flags
