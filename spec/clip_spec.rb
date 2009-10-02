@@ -301,7 +301,7 @@ describe Clip do
     end
   end
   describe "Remaining arguments for Clip.hash" do
-    setup { Clip.reset_hash! }
+    before(:each) { Clip.reset_hash! }
 
     it "should be populated" do
       Clip.hash(['captain', 'lieutenant', '-c', 'jorge']).remainder.
@@ -448,7 +448,7 @@ describe Clip do
   end
 
   describe "when parsing ARGV as a hash" do
-    setup { Clip.reset_hash! }
+    before(:each) { Clip.reset_hash! }
 
     it "should make sense of '-c my_config.yml'" do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
