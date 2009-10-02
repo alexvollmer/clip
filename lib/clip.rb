@@ -51,7 +51,7 @@ module Clip
     # <tt>long?</tt>. The <tt>short</tt> parameter indicates 
     # the single-letter equivalent. Options that use the '-'
     # character as a word separator are converted to method names using
-    # '_'. For example the name 'exclude-files' would create two method named
+    # '_'. For example the name 'exclude-files' would create two methods named
     # <tt>exclude_files</tt> and <tt>exclude_files?</tt>.
     #
     # When the <tt>:multi</tt> option is enabled, the associated accessor
