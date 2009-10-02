@@ -197,6 +197,14 @@ describe Clip do
       end
     end
 
+    it "should work if no description given" do
+      opts = Clip do |o|
+        o.opt 'X', 'no-description'
+      end
+      help = opts.to_s.split("\n")
+      help[1].should == "-X  --no-description  "
+    end
+
     it "should print out some sensible usage info for to_s" do
       help = opts("-s localhost").to_s.split("\n")
       help[0].should match(/Usage/)

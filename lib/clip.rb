@@ -344,7 +344,7 @@ module Clip
     def initialize(short, long, options)
       @short = short
       @long = long
-      @description = options[:desc]
+      @description = options[:desc] || ""
       @default = options[:default]
       @required = options[:required]
       @multi = options[:multi]
