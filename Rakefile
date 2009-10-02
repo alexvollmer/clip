@@ -4,7 +4,8 @@ require 'rubygems'
 require 'hoe'
 require './lib/clip.rb'
 
-Hoe.new('clip', Clip::VERSION) do |p|
+Hoe.spec('clip') do |p|
+  p.version = Clip::VERSION
   p.name = 'clip'
   p.developer('Alex Vollmer', 'alex.vollmer@gmail.com')
   p.description = p.paragraphs_of('README.txt', 5..5).join("\n\n")
