@@ -47,11 +47,12 @@ module Clip
 
     ##
     # Declare an optional parameter for your parser. This creates an accessor
-    # method matching the <tt>long</tt> parameter. The <tt>short</tt> parameter
-    # indicates the single-letter equivalent. Options that use the '-'
+    # method matching the <tt>long</tt> parameter and a present method 
+    # <tt>long?</tt>. The <tt>short</tt> parameter indicates 
+    # the single-letter equivalent. Options that use the '-'
     # character as a word separator are converted to method names using
-    # '_'. For example the name 'exclude-files' would create a method named
-    # <tt>exclude_files</tt>.
+    # '_'. For example the name 'exclude-files' would create two method named
+    # <tt>exclude_files</tt> and <tt>exclude_files?</tt>.
     #
     # When the <tt>:multi</tt> option is enabled, the associated accessor
     # method will return an <tt>Array</tt> instead of a single scalar value.
@@ -86,6 +87,10 @@ module Clip
 
         define_method(long.to_sym) do
           instance_variable_get(var_name)
+        end
+        
+        define_method("#{long}?") do
+          !instance_variable_get(var_name).nil?
         end
       end
 

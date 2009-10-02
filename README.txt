@@ -42,7 +42,7 @@ And it goes a little something like this...
 
   if options.valid?
     if options.verbose?
-      puts options.host
+      puts options.server if options.server?
       puts options.port
       puts 'files:'
       options.files.each do |f|
