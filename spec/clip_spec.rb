@@ -67,10 +67,13 @@ describe Clip do
       parser = parse('')
       parser.should respond_to(:server)
       parser.should respond_to(:server=)
+      parser.should respond_to(:server?)
       parser.should respond_to(:port)
-      parser.should respond_to(:port)
+      parser.should respond_to(:port=)
+      parser.should respond_to(:port?)
       parser.should respond_to(:files)
       parser.should respond_to(:files=)
+      parser.should respond_to(:files?)
       parser.should respond_to(:verbose?)
       parser.should respond_to(:flag_verbose)
       parser.should respond_to(:allow_dashes?)
@@ -87,7 +90,9 @@ describe Clip do
     it "should set fields for flags with the given values" do
       parser = parse('--server localhost --port 8080 --files foo')
       parser.server.should eql("localhost")
+      parser.server?.should eql(true)
       parser.port.should eql("8080")
+      parser.port?.should eql(true)
       parser.should be_valid
       parser.should_not have_errors
     end
@@ -95,6 +100,7 @@ describe Clip do
     it "should map options with '-' to methods with '_'" do
       parser = parse('--exclude-from /Users --files foo')
       parser.exclude_from.should eql("/Users")
+      parser.exclude_from?.should eql(true)
       parser.should be_valid
       parser.should_not have_errors
     end
@@ -108,12 +114,15 @@ describe Clip do
     it "should map options with multiple '-' to methods with '_'" do
       parser = parse('--exclude-from-all /Users --files foo')
       parser.exclude_from_all.should eql("/Users")
+      parser.exclude_from_all?.should eql(true)
       parser.should be_valid
       parser.should_not have_errors
     end
 
     it "should be invalid for unknown options" do
       parser = parse('--non-existent')
+      parser.exclude_from_all?.should eql(false)
+      parser.exclude_from?.should eql(false)
       parser.should_not be_valid
       parser.should have_errors_on(:non_existent)
     end
@@ -133,7 +142,9 @@ describe Clip do
       parser.should_not have_errors
       parser.should be_valid
       parser.server.should eql("localhost")
+      parser.server?.should eql(true)
       parser.port.should eql("8080")
+      parser.port?.should eql(true)
       parser.should_not be_verbose
     end
   end
@@ -184,6 +195,14 @@ describe Clip do
         o.flag 'v', 'verbose', :desc => 'Enables verbose output'
         yield o if block_given?
       end
+    end
+
+    it "should work if no description given" do
+      opts = Clip do |o|
+        o.opt 'X', 'no-description'
+      end
+      help = opts.to_s.split("\n")
+      help[1].should == "-X  --no-description  "
     end
 
     it "should print out some sensible usage info for to_s" do
@@ -301,7 +320,7 @@ describe Clip do
     end
   end
   describe "Remaining arguments for Clip.hash" do
-    setup { Clip.reset_hash! }
+    before(:each) { Clip.reset_hash! }
 
     it "should be populated" do
       Clip.hash(['captain', 'lieutenant', '-c', 'jorge']).remainder.
@@ -448,7 +467,7 @@ describe Clip do
   end
 
   describe "when parsing ARGV as a hash" do
-    setup { Clip.reset_hash! }
+    before(:each) { Clip.reset_hash! }
 
     it "should make sense of '-c my_config.yml'" do
       Clip.hash(['-c', 'config.yml']).should == { 'c' => 'config.yml' }
