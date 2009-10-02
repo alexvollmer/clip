@@ -15,7 +15,7 @@ def Clip(args=ARGV)
 end
 
 module Clip
-  VERSION = "1.0.1"
+  VERSION = "1.0.2"
 
   ##
   # Indicates that the parser was incorrectly configured in the
@@ -47,8 +47,8 @@ module Clip
 
     ##
     # Declare an optional parameter for your parser. This creates an accessor
-    # method matching the <tt>long</tt> parameter and a present method 
-    # <tt>long?</tt>. The <tt>short</tt> parameter indicates 
+    # method matching the <tt>long</tt> parameter and a present method
+    # <tt>long?</tt>. The <tt>short</tt> parameter indicates
     # the single-letter equivalent. Options that use the '-'
     # character as a word separator are converted to method names using
     # '_'. For example the name 'exclude-files' would create two methods named
@@ -88,7 +88,7 @@ module Clip
         define_method(long.to_sym) do
           instance_variable_get(var_name)
         end
-        
+
         define_method("#{long}?") do
           !instance_variable_get(var_name).nil?
         end
